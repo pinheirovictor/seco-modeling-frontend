@@ -34,7 +34,7 @@ function PaletteActor({
 }: PaletteActorProps) {
   const disabledMessage =
     actor.value === 'company_of_interest'
-      ? 'Já existe uma Companhia de Interesse neste modelo.'
+      ? 'Já existe uma Empresa de Interesse neste modelo.'
       : 'Este ator não pode ser adicionado no momento.';
 
   return (

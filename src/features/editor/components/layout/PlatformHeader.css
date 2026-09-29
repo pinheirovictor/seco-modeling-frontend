@@ -9,9 +9,11 @@
 
   flex: 0 0 auto;
 
-  background: #ffffff;
+  background: var(--ecos-beige);
 
-  border-bottom: 1px solid #dfe5ee;
+  border-bottom:
+    1px solid
+    var(--ecos-border);
 
   z-index: 100;
 }
@@ -20,13 +22,21 @@
    BARRA SUPERIOR
    ========================================================= */
 
+/**
+ * Recupera a identidade visual histórica da ECOS Modeling:
+ *
+ * grafite no topo + navegação bege.
+ */
+
 .platform-header__top {
   height: 28px;
 
   display: flex;
+
   align-items: center;
 
-  background: #12395b;
+  background:
+    var(--ecos-primary);
 
   color: #ffffff;
 }
@@ -54,13 +64,22 @@
 
   min-height: 22px;
 
-  padding: 0 7px;
+  padding:
+    0
+    7px;
 
-  border-radius: 5px;
+  border-radius: 4px;
 
-  color: rgba(255, 255, 255, 0.9);
+  color:
+    rgba(
+      255,
+      255,
+      255,
+      0.92
+    );
 
   font-size: 9px;
+
   font-weight: 750;
 
   letter-spacing: 0.04em;
@@ -77,7 +96,8 @@
 
   align-items: center;
 
-  background: #ffffff;
+  background:
+    var(--ecos-beige);
 }
 
 .platform-header__container {
@@ -89,7 +109,9 @@
 
   margin: 0 auto;
 
-  padding: 0 28px;
+  padding:
+    0
+    28px;
 
   display: grid;
 
@@ -122,18 +144,22 @@
 }
 
 .platform-brand__ecos {
-  color: #12395b;
+  color:
+    var(--ecos-primary);
 
   font-size: 21px;
+
   font-weight: 900;
 
   letter-spacing: -0.035em;
 }
 
 .platform-brand__modeling {
-  color: #4c647a;
+  color:
+    var(--ecos-text-secondary);
 
   font-size: 16px;
+
   font-weight: 500;
 
   letter-spacing: -0.025em;
@@ -156,6 +182,10 @@
   gap: 2px;
 }
 
+/* =========================================================
+   LINKS
+   ========================================================= */
+
 .platform-nav__link {
   position: relative;
 
@@ -166,15 +196,19 @@
   align-items: center;
   justify-content: center;
 
-  padding: 0 11px;
+  padding:
+    0
+    11px;
 
-  color: #536174;
+  color:
+    var(--ecos-text-secondary);
 
   text-decoration: none;
 
   white-space: nowrap;
 
   font-size: 10.5px;
+
   font-weight: 650;
 
   transition:
@@ -182,11 +216,26 @@
     background 0.15s ease;
 }
 
-.platform-nav__link:hover {
-  color: #12395b;
+/* =========================================================
+   LINK HOVER
+   ========================================================= */
 
-  background: #f7f9fc;
+.platform-nav__link:hover {
+  color:
+    var(--ecos-primary);
+
+  background:
+    var(--ecos-beige-hover);
 }
+
+/* =========================================================
+   INDICADOR ATIVO
+   ========================================================= */
+
+/**
+ * O azul acinzentado é utilizado somente como indicação
+ * de interação/estado ativo, e não como cor principal.
+ */
 
 .platform-nav__link::after {
   content: "";
@@ -199,25 +248,45 @@
 
   height: 3px;
 
-  border-radius: 3px 3px 0 0;
+  border-radius:
+    3px
+    3px
+    0
+    0;
 
-  background: #12395b;
+  background:
+    var(--ecos-accent);
 
-  transform: scaleX(0);
+  transform:
+    scaleX(0);
 
-  transform-origin: center;
+  transform-origin:
+    center;
 
-  transition: transform 0.16s ease;
+  transition:
+    transform
+    0.16s
+    ease;
 }
 
 .platform-nav__link--active {
-  color: #12395b;
+  color:
+    var(--ecos-primary);
 
   font-weight: 800;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.26
+    );
 }
 
 .platform-nav__link--active::after {
-  transform: scaleX(1);
+  transform:
+    scaleX(1);
 }
 
 /* =========================================================
@@ -234,6 +303,10 @@
   flex: 0 0 auto;
 }
 
+/* =========================================================
+   CADASTRO
+   ========================================================= */
+
 .platform-header__account-link {
   min-height: 34px;
 
@@ -242,15 +315,19 @@
   align-items: center;
   justify-content: center;
 
-  padding: 0 11px;
+  padding:
+    0
+    11px;
 
   border-radius: 7px;
 
-  color: #536174;
+  color:
+    var(--ecos-text-secondary);
 
   text-decoration: none;
 
   font-size: 10.5px;
+
   font-weight: 700;
 
   transition:
@@ -260,39 +337,85 @@
 }
 
 .platform-header__account-link:hover {
-  color: #12395b;
+  color:
+    var(--ecos-primary);
 
-  background: #f4f7fa;
+  background:
+    var(--ecos-beige-hover);
 }
 
+/* =========================================================
+   ENTRAR
+   ========================================================= */
+
 .platform-header__account-link--login {
-  padding: 0 14px;
+  padding:
+    0
+    14px;
 
-  border: 1px solid #12395b;
+  border:
+    1px solid
+    var(--ecos-primary);
 
-  background: #12395b;
+  background:
+    var(--ecos-primary);
 
   color: #ffffff;
 }
 
 .platform-header__account-link--login:hover {
-  background: #0e304d;
+  background:
+    var(--ecos-primary-hover);
 
   color: #ffffff;
 
-  border-color: #0e304d;
+  border-color:
+    var(--ecos-primary-hover);
 }
+
+/* =========================================================
+   CONTA ATIVA
+   ========================================================= */
 
 .platform-header__account-link--active:not(
   .platform-header__account-link--login
 ) {
-  color: #12395b;
+  color:
+    var(--ecos-primary);
 
-  background: #edf4f8;
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.5
+    );
+
+  box-shadow:
+    inset
+    0
+    0
+    0
+    1px
+    var(--ecos-border);
 }
 
 /* =========================================================
-   RESPONSIVIDADE
+   FOCO DE TECLADO
+   ========================================================= */
+
+.platform-brand:focus-visible,
+.platform-nav__link:focus-visible,
+.platform-header__account-link:focus-visible {
+  outline:
+    2px solid
+    var(--ecos-accent);
+
+  outline-offset: -2px;
+}
+
+/* =========================================================
+   RESPONSIVIDADE — 1380px
    ========================================================= */
 
 @media (max-width: 1380px) {
@@ -317,6 +440,10 @@
   }
 }
 
+/* =========================================================
+   RESPONSIVIDADE — 1120px
+   ========================================================= */
+
 @media (max-width: 1120px) {
   .platform-header__container {
     grid-template-columns:
@@ -326,11 +453,14 @@
   }
 
   .platform-nav {
-    justify-content: flex-start;
+    justify-content:
+      flex-start;
 
-    overflow-x: auto;
+    overflow-x:
+      auto;
 
-    scrollbar-width: none;
+    scrollbar-width:
+      none;
   }
 
   .platform-nav::-webkit-scrollbar {
@@ -338,6 +468,9 @@
   }
 
   .platform-nav__link {
-    flex: 0 0 auto;
+    flex:
+      0
+      0
+      auto;
   }
 }

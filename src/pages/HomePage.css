@@ -7,9 +7,9 @@
 
   min-height: 100%;
 
-  background: #ffffff;
+  background: var(--ecos-surface);
 
-  color: #172033;
+  color: var(--ecos-text);
 }
 
 .home-container {
@@ -39,12 +39,14 @@
   background:
     linear-gradient(
       120deg,
-      #f7fafc 0%,
-      #ffffff 48%,
-      #edf5fa 100%
+      var(--ecos-beige) 0%,
+      var(--ecos-beige-soft) 52%,
+      #ffffff 100%
     );
 
-  border-bottom: 1px solid #e7ecf1;
+  border-bottom:
+    1px solid
+    var(--ecos-border);
 }
 
 .home-hero::before {
@@ -61,7 +63,7 @@
   border-radius: 50%;
 
   background:
-    rgba(18, 57, 91, 0.055);
+    rgba(94, 94, 94, 0.035);
 }
 
 .home-hero::after {
@@ -78,7 +80,7 @@
   border-radius: 50%;
 
   background:
-    rgba(31, 93, 140, 0.045);
+    rgba(79, 116, 135, 0.035);
 }
 
 .home-hero__content {
@@ -119,11 +121,16 @@
 
   margin-bottom: 17px;
 
+  border:
+    1px solid
+    var(--ecos-border);
+
   border-radius: 999px;
 
-  background: #eaf2f8;
+  background:
+    rgba(255, 255, 255, 0.68);
 
-  color: #1c547a;
+  color: var(--ecos-primary);
 
   font-size: 9px;
   font-weight: 850;
@@ -141,7 +148,7 @@
 
   max-width: 680px;
 
-  color: #142438;
+  color: var(--ecos-text);
 
   font-size: clamp(
     31px,
@@ -164,7 +171,8 @@
     0
     28px;
 
-  color: #607086;
+  color:
+    var(--ecos-text-secondary);
 
   font-size: 14px;
 
@@ -204,16 +212,20 @@
 
   text-decoration: none;
 
-  border: 1px solid transparent;
+  border:
+    1px solid
+    transparent;
 
   font-size: 11px;
+
   font-weight: 750;
 
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease,
     background 0.15s ease,
-    border-color 0.15s ease;
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 button.home-button {
@@ -221,55 +233,89 @@ button.home-button {
 }
 
 .home-button:hover {
-  transform: translateY(-1px);
+  transform:
+    translateY(-1px);
 }
 
-.home-button--primary {
-  background: #12395b;
+/* =========================================================
+   PRIMARY BUTTON
+   ========================================================= */
 
-  border-color: #12395b;
+.home-button--primary {
+  background:
+    var(--ecos-primary);
+
+  border-color:
+    var(--ecos-primary);
 
   color: #ffffff;
 
   box-shadow:
     0 7px 18px
-    rgba(18, 57, 91, 0.17);
+    rgba(34, 34, 34, 0.13);
 }
 
 .home-button--primary:hover {
-  background: #0e304d;
+  background:
+    var(--ecos-primary-hover);
 
-  border-color: #0e304d;
+  border-color:
+    var(--ecos-primary-hover);
 
   color: #ffffff;
 }
 
+/* =========================================================
+   SECONDARY BUTTON
+   ========================================================= */
+
 .home-button--secondary {
-  background: #ffffff;
+  background:
+    var(--ecos-surface);
 
-  border-color: #d6e0e9;
+  border-color:
+    var(--ecos-border);
 
-  color: #405269;
+  color:
+    var(--ecos-primary);
 }
 
 .home-button--secondary:hover {
-  background: #f7f9fc;
+  background:
+    var(--ecos-beige-hover);
 
-  border-color: #bdcad7;
+  border-color:
+    var(--ecos-border-strong);
 
-  color: #12395b;
+  color:
+    var(--ecos-primary-hover);
 }
 
+/* =========================================================
+   LIGHT BUTTON
+   ========================================================= */
+
 .home-button--light {
-  background: #ffffff;
+  background:
+    var(--ecos-surface);
 
-  color: #12395b;
+  color:
+    var(--ecos-primary);
 
-  border-color: #ffffff;
+  border-color:
+    var(--ecos-surface);
 
   box-shadow:
     0 6px 18px
-    rgba(6, 30, 49, 0.16);
+    rgba(34, 34, 34, 0.14);
+}
+
+.home-button--light:hover {
+  background:
+    var(--ecos-beige-soft);
+
+  border-color:
+    var(--ecos-beige-soft);
 }
 
 /* =========================================================
@@ -289,24 +335,29 @@ button.home-button {
   width: 460px;
   height: 270px;
 
-  border: 1px solid #dce5ed;
+  border:
+    1px solid
+    var(--ecos-border);
 
   border-radius: 18px;
 
   background:
     radial-gradient(
       circle,
-      #dae2ea 1px,
+      #deddd6 1px,
       transparent 1px
     );
 
-  background-size: 22px 22px;
+  background-size:
+    22px
+    22px;
 
-  background-color: #ffffff;
+  background-color:
+    #ffffff;
 
   box-shadow:
     0 25px 70px
-    rgba(30, 55, 78, 0.11);
+    rgba(34, 34, 34, 0.10);
 }
 
 /* =========================================================
@@ -325,17 +376,26 @@ button.home-button {
   align-items: center;
   justify-content: center;
 
-  padding: 0 16px;
+  padding:
+    0
+    16px;
 
-  border: 1.5px solid #111827;
+  border:
+    1.5px solid
+    #111827;
 
   font-size: 9px;
+
   font-weight: 800;
 
   white-space: nowrap;
 
   z-index: 3;
 }
+
+/* =========================================================
+   FORNECEDOR
+   ========================================================= */
 
 .home-ecos-preview__node--supplier {
   left: 28px;
@@ -357,6 +417,10 @@ button.home-button {
     );
 }
 
+/* =========================================================
+   COMPANHIA DE INTERESSE
+   ========================================================= */
+
 .home-ecos-preview__node--coi {
   right: 27px;
   top: 109px;
@@ -367,6 +431,10 @@ button.home-button {
 
   color: #ffffff;
 }
+
+/* =========================================================
+   CLIENTE
+   ========================================================= */
 
 .home-ecos-preview__node--customer {
   left: 40px;
@@ -401,12 +469,14 @@ button.home-button {
   width: 160px;
   height: 1.5px;
 
-  background: #111827;
+  background: #222222;
 
   transform:
     rotate(17deg);
 
-  transform-origin: left center;
+  transform-origin:
+    left
+    center;
 
   z-index: 1;
 }
@@ -439,9 +509,12 @@ button.home-button {
   align-items: center;
   justify-content: center;
 
-  background: #ffffff;
+  background:
+    #ffffff;
 
-  border: 1px solid #111827;
+  border:
+    1px solid
+    #222222;
 
   clip-path:
     polygon(
@@ -452,9 +525,10 @@ button.home-button {
       0 100%
     );
 
-  color: #111827;
+  color: #222222;
 
   font-size: 8px;
+
   font-weight: 850;
 
   transform:
@@ -479,14 +553,27 @@ button.home-button {
   padding:
     72px
     0;
+
+  background:
+    var(--ecos-surface);
 }
 
 .home-section--soft {
-  background: #f7f9fc;
+  background:
+    var(--ecos-beige);
 
-  border-top: 1px solid #edf1f5;
-  border-bottom: 1px solid #edf1f5;
+  border-top:
+    1px solid
+    var(--ecos-border);
+
+  border-bottom:
+    1px solid
+    var(--ecos-border);
 }
+
+/* =========================================================
+   SECTION HEADING
+   ========================================================= */
 
 .home-section__heading {
   max-width: 720px;
@@ -499,9 +586,11 @@ button.home-button {
 
   margin-bottom: 7px;
 
-  color: #35729d;
+  color:
+    var(--ecos-primary);
 
   font-size: 9px;
+
   font-weight: 850;
 
   text-transform: uppercase;
@@ -512,7 +601,8 @@ button.home-button {
 .home-section__heading h2 {
   margin: 0;
 
-  color: #1b2a3e;
+  color:
+    var(--ecos-text);
 
   font-size: 25px;
 
@@ -529,7 +619,8 @@ button.home-button {
 
   max-width: 670px;
 
-  color: #728095;
+  color:
+    var(--ecos-text-secondary);
 
   font-size: 12px;
 
@@ -551,7 +642,8 @@ button.home-button {
 .home-about p {
   margin: 0;
 
-  color: #58697e;
+  color:
+    var(--ecos-text-secondary);
 
   font-size: 12.5px;
 
@@ -568,7 +660,10 @@ button.home-button {
   display: grid;
 
   grid-template-columns:
-    repeat(4, minmax(0, 1fr));
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
 
   gap: 16px;
 }
@@ -578,11 +673,14 @@ button.home-button {
 
   padding: 23px;
 
-  border: 1px solid #dfe6ed;
+  border:
+    1px solid
+    var(--ecos-border);
 
   border-radius: 12px;
 
-  background: #ffffff;
+  background:
+    var(--ecos-surface);
 
   transition:
     transform 0.16s ease,
@@ -591,13 +689,15 @@ button.home-button {
 }
 
 .home-feature-card:hover {
-  transform: translateY(-3px);
+  transform:
+    translateY(-3px);
 
-  border-color: #c7d5e1;
+  border-color:
+    var(--ecos-border-strong);
 
   box-shadow:
     0 13px 34px
-    rgba(26, 49, 70, 0.075);
+    rgba(34, 34, 34, 0.075);
 }
 
 .home-feature-card__icon {
@@ -610,11 +710,23 @@ button.home-button {
 
   place-items: center;
 
+  border:
+    1px solid
+    var(--ecos-border);
+
   border-radius: 9px;
 
-  background: #edf4f8;
+  background:
+    var(--ecos-beige-soft);
 
-  color: #245d83;
+  color:
+    var(--ecos-primary);
+}
+
+.home-feature-card:hover
+.home-feature-card__icon {
+  color:
+    var(--ecos-accent);
 }
 
 .home-feature-card h3 {
@@ -623,7 +735,8 @@ button.home-button {
     0
     9px;
 
-  color: #2b3b4f;
+  color:
+    var(--ecos-text);
 
   font-size: 13px;
 
@@ -633,7 +746,8 @@ button.home-button {
 .home-feature-card p {
   margin: 0;
 
-  color: #788597;
+  color:
+    var(--ecos-text-secondary);
 
   font-size: 10.5px;
 
@@ -668,17 +782,26 @@ button.home-button {
 
   gap: 6px;
 
-  color: #1c5a83;
+  color:
+    var(--ecos-accent-hover);
 
   text-decoration: none;
 
   font-size: 10.5px;
+
   font-weight: 750;
 }
 
 .home-inline-link:hover {
+  color:
+    var(--ecos-accent);
+
   text-decoration: underline;
 }
+
+/* =========================================================
+   MODEL COUNTER
+   ========================================================= */
 
 .home-model-counter {
   min-height: 170px;
@@ -692,19 +815,24 @@ button.home-button {
 
   padding: 20px;
 
-  border: 1px solid #dfe6ed;
+  border:
+    1px solid
+    var(--ecos-border);
 
   border-radius: 14px;
 
-  background: #f9fbfd;
+  background:
+    var(--ecos-beige-soft);
 
-  color: #315d7c;
+  color:
+    var(--ecos-primary);
 }
 
 .home-model-counter strong {
   margin-top: 7px;
 
-  color: #12395b;
+  color:
+    var(--ecos-primary);
 
   font-size: 38px;
 
@@ -714,7 +842,8 @@ button.home-button {
 .home-model-counter span {
   margin-top: 8px;
 
-  color: #7c8999;
+  color:
+    var(--ecos-text-secondary);
 
   font-size: 9.5px;
 }
@@ -727,17 +856,23 @@ button.home-button {
   display: grid;
 
   grid-template-columns:
-    repeat(4, minmax(0, 1fr));
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
 
   gap: 1px;
 
   overflow: hidden;
 
-  border: 1px solid #dfe6ed;
+  border:
+    1px solid
+    var(--ecos-border);
 
   border-radius: 12px;
 
-  background: #dfe6ed;
+  background:
+    var(--ecos-border);
 }
 
 .home-statistic {
@@ -754,19 +889,28 @@ button.home-button {
 
   padding: 20px;
 
-  background: #ffffff;
+  background:
+    var(--ecos-surface);
 
-  color: #326282;
+  color:
+    var(--ecos-primary);
+}
+
+.home-statistic svg {
+  color:
+    var(--ecos-primary);
 }
 
 .home-statistic strong {
-  color: #273a50;
+  color:
+    var(--ecos-text);
 
   font-size: 16px;
 }
 
 .home-statistic span {
-  color: #8995a4;
+  color:
+    var(--ecos-text-secondary);
 
   font-size: 9.5px;
 
@@ -788,11 +932,14 @@ button.home-button {
 
   padding: 28px;
 
-  border: 1px solid #dde5ed;
+  border:
+    1px solid
+    var(--ecos-border);
 
   border-radius: 13px;
 
-  background: #f9fbfd;
+  background:
+    var(--ecos-beige-soft);
 }
 
 .home-reference__icon {
@@ -803,11 +950,17 @@ button.home-button {
 
   place-items: center;
 
+  border:
+    1px solid
+    var(--ecos-border);
+
   border-radius: 10px;
 
-  background: #eaf2f8;
+  background:
+    var(--ecos-surface);
 
-  color: #245d83;
+  color:
+    var(--ecos-primary);
 }
 
 .home-reference
@@ -823,7 +976,8 @@ button.home-button {
     0
     20px;
 
-  color: #58697d;
+  color:
+    var(--ecos-text-secondary);
 
   font-size: 10.5px;
 
@@ -842,11 +996,15 @@ button.home-button {
   background:
     linear-gradient(
       120deg,
-      #12395b,
-      #174d73
+      #5e5e5e,
+      #4b4b4b
     );
 
   color: #ffffff;
+
+  border-top:
+    1px solid
+    #484848;
 }
 
 .home-cta__content {
@@ -868,9 +1026,10 @@ button.home-button {
   margin-bottom: 7px;
 
   color:
-    rgba(255, 255, 255, 0.63);
+    rgba(255, 255, 255, 0.62);
 
   font-size: 9px;
+
   font-weight: 850;
 
   text-transform: uppercase;
@@ -884,6 +1043,8 @@ button.home-button {
     0
     9px;
 
+  color: #ffffff;
+
   font-size: 23px;
 
   letter-spacing: -0.025em;
@@ -893,7 +1054,7 @@ button.home-button {
   margin: 0;
 
   color:
-    rgba(255, 255, 255, 0.73);
+    rgba(255, 255, 255, 0.75);
 
   font-size: 11px;
 
@@ -909,10 +1070,15 @@ button.home-button {
     25px
     0;
 
-  background: #0e2f4c;
+  background:
+    #3f3f3f;
 
   color:
-    rgba(255, 255, 255, 0.75);
+    rgba(255, 255, 255, 0.74);
+
+  border-top:
+    1px solid
+    #353535;
 }
 
 .home-footer__content {
@@ -972,13 +1138,19 @@ button.home-button {
 
   .home-features {
     grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
   }
 }
 
 @media (max-width: 760px) {
   .home-container {
-    width: calc(100% - 30px);
+    width:
+      calc(
+        100% - 30px
+      );
   }
 
   .home-hero {
@@ -1015,7 +1187,10 @@ button.home-button {
 
   .home-statistics {
     grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
   }
 
   .home-reference {
@@ -1024,15 +1199,19 @@ button.home-button {
   }
 
   .home-cta__content {
-    flex-direction: column;
+    flex-direction:
+      column;
 
-    align-items: flex-start;
+    align-items:
+      flex-start;
   }
 
   .home-footer__content {
-    flex-direction: column;
+    flex-direction:
+      column;
 
-    align-items: flex-start;
+    align-items:
+      flex-start;
 
     gap: 8px;
   }

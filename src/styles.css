@@ -1,3 +1,7 @@
+/* =========================================================
+   ECOS MODELING 4.0 — DESIGN SYSTEM
+   ========================================================= */
+
 :root {
   font-family:
     Inter,
@@ -8,25 +12,111 @@
     "Segoe UI",
     sans-serif;
 
-  color: #172033;
-  background: #eef2f7;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 
-  --border-default: #dfe5ee;
-  --border-soft: #edf1f5;
+  /* =====================================================
+     IDENTIDADE ECOS MODELING
 
-  --text-primary: #172033;
-  --text-secondary: #59697d;
-  --text-muted: #8793a3;
+     Baseada na identidade visual das versões anteriores:
+     grafite + bege.
+     ===================================================== */
 
-  --canvas-background: #fafbfc;
+  --ecos-primary: #5e5e5e;
+  --ecos-primary-hover: #484848;
+  --ecos-primary-soft: #747474;
 
-  --selection-color: #2563eb;
-  --selection-ring: rgba(37, 99, 235, 0.22);
+  /*
+   * Cor histórica da ECOS Modeling.
+   * Utilizada nas áreas estruturais da interface.
+   */
+  --ecos-beige: #f2f0e6;
+  --ecos-beige-soft: #f7f6f1;
+  --ecos-beige-hover: #eceae0;
 
-  --danger-color: #dc2626;
+  /* =====================================================
+     SUPERFÍCIES
+     ===================================================== */
+
+  --ecos-background: #f2f0e6;
+
+  --ecos-surface: #ffffff;
+  --ecos-surface-secondary: #f7f6f1;
+
+  --ecos-panel: #f2f0e6;
+  --ecos-panel-soft: #f7f6f1;
+
+  --ecos-surface-hover: #f5f4ef;
+
+  /* =====================================================
+     TEXTO
+     ===================================================== */
+
+  --ecos-text: #222222;
+  --ecos-text-secondary: #6a6a6a;
+  --ecos-text-muted: #929292;
+
+  /* =====================================================
+     BORDAS
+     ===================================================== */
+
+  --ecos-border: #d8d6cc;
+  --ecos-border-light: #e7e5dc;
+  --ecos-border-strong: #c4c1b5;
+
+  /* =====================================================
+     DESTAQUE / INTERAÇÃO
+
+     O azul acinzentado NÃO é cor principal da marca.
+     É utilizado para foco, seleção e interação.
+     ===================================================== */
+
+  --ecos-accent: #4f7487;
+  --ecos-accent-hover: #405f70;
+  --ecos-accent-soft: #edf3f5;
+
+  /* =====================================================
+     FEEDBACK
+     ===================================================== */
+
+  --ecos-success: #3f7d64;
+  --ecos-success-soft: #edf6f1;
+
+  --ecos-warning: #b7791f;
+  --ecos-warning-soft: #fff7e8;
+
+  --ecos-danger: #c94a42;
+  --ecos-danger-soft: #fceeed;
+
+  /* =====================================================
+     EDITOR
+     ===================================================== */
+
+  --border-default: var(--ecos-border);
+  --border-soft: var(--ecos-border-light);
+
+  --text-primary: var(--ecos-text);
+  --text-secondary: var(--ecos-text-secondary);
+  --text-muted: var(--ecos-text-muted);
+
+  /*
+   * O canvas permanece claro para contrastar com os
+   * painéis laterais em bege.
+   */
+  --canvas-background: #fdfdfb;
+
+  --selection-color: var(--ecos-accent);
+  --selection-ring: rgba(79, 116, 135, 0.22);
+
+  --danger-color: var(--ecos-danger);
+
+  --ecos-shadow:
+    0 8px 24px
+    rgba(34, 34, 34, 0.08);
+
+  color: var(--ecos-text);
+
+  background: var(--ecos-background);
 }
 
 /* =========================================================
@@ -48,6 +138,10 @@ body,
 
 body {
   overflow: hidden;
+
+  color: var(--ecos-text);
+
+  background: var(--ecos-background);
 }
 
 button,
@@ -65,6 +159,10 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* =========================================================
+   KEYBOARD SHORTCUT
+   ========================================================= */
+
 kbd {
   display: inline-flex;
 
@@ -75,13 +173,17 @@ kbd {
 
   padding: 0 5px;
 
-  border: 1px solid #d8e0e9;
+  border:
+    1px solid
+    var(--ecos-border);
+
   border-bottom-width: 2px;
+
   border-radius: 5px;
 
-  background: #f8fafc;
+  background: var(--ecos-surface);
 
-  color: #536174;
+  color: var(--ecos-text-secondary);
 
   font-size: 9px;
   font-family: inherit;
@@ -93,156 +195,127 @@ kbd {
    ========================================================= */
 
 .app-shell {
-  height: 100vh;
+  height: 100%;
 
   min-width: 1060px;
+  min-height: 0;
 
   display: grid;
 
   grid-template-rows:
     64px
-    1fr;
+    minmax(0, 1fr);
 
   overflow: hidden;
 
-  background: #f7f9fc;
+  background: var(--ecos-beige);
 }
 
 /* =========================================================
-   TOOLBAR
+   EDITOR TOOLBAR
    ========================================================= */
 
 .toolbar {
+  width: 100%;
+  height: 64px;
+
   display: grid;
 
   grid-template-columns:
-    270px
     minmax(260px, 1fr)
     auto;
 
   align-items: center;
 
-  gap: 18px;
+  gap: 24px;
 
   padding: 0 18px;
 
-  background: #ffffff;
+  background: var(--ecos-beige-soft);
 
   border-bottom:
     1px solid
-    var(--border-default);
+    var(--ecos-border);
 
-  box-shadow:
-    0 1px 0
-    rgba(15, 23, 42, 0.02);
+  box-sizing: border-box;
+
+  flex: 0 0 auto;
 
   z-index: 30;
 }
 
-.brand {
-  display: flex;
-
-  align-items: center;
-
-  gap: 11px;
-}
-
-.brand__mark {
-  display: grid;
-
-  place-items: center;
-
-  width: 35px;
-  height: 35px;
-
-  border-radius: 9px;
-
-  background:
-    linear-gradient(
-      145deg,
-      #12395b,
-      #1f5d8c
-    );
-
-  color: white;
-
-  font-weight: 850;
-
-  box-shadow:
-    0 4px 12px
-    rgba(18, 57, 91, 0.18);
-}
-
-.brand strong {
-  display: block;
-
-  font-size: 14px;
-
-  letter-spacing: -0.01em;
-}
-
-.brand span {
-  display: block;
-
-  margin-top: 2px;
-
-  font-size: 10px;
-
-  color: #7a8798;
-}
-
 /* =========================================================
-   MODEL TITLE
+   NOME DO MODELO
    ========================================================= */
 
 .model-title {
-  justify-self: center;
+  min-width: 0;
 
   display: flex;
 
   align-items: center;
 
-  gap: 8px;
+  gap: 12px;
 }
 
 .model-title > span {
-  font-size: 11px;
+  flex: 0 0 auto;
 
-  color: #8793a3;
+  color: var(--ecos-text-secondary);
 
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 750;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.07em;
 }
 
 .model-title input {
-  width:
-    min(
-      360px,
-      31vw
-    );
+  width: min(420px, 100%);
 
-  padding: 8px 10px;
+  min-width: 120px;
+  height: 36px;
+
+  padding: 0 10px;
 
   border:
-    1px solid transparent;
+    1px solid
+    transparent;
 
-  border-radius: 8px;
+  border-radius: 7px;
 
   background: transparent;
 
-  color: #202b3d;
+  color: var(--ecos-text);
 
-  text-align: center;
+  font-family: inherit;
 
-  font-weight: 700;
-}
+  font-size: 14px;
+  font-weight: 750;
 
-.model-title input:hover,
-.model-title input:focus {
   outline: none;
 
-  border-color: #d8e1ec;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
 
-  background: #f8fafc;
+.model-title input:hover {
+  background: var(--ecos-surface);
+
+  border-color: var(--ecos-border);
+}
+
+.model-title input:focus {
+  background: var(--ecos-surface);
+
+  border-color: var(--ecos-accent);
+
+  box-shadow:
+    0 0 0 3px
+    var(--selection-ring);
 }
 
 /* =========================================================
@@ -253,63 +326,64 @@ kbd {
   display: flex;
 
   align-items: center;
+  justify-content: flex-end;
 
-  gap: 5px;
+  gap: 6px;
+
+  flex: 0 0 auto;
 }
 
 .toolbar__actions button {
-  height: 34px;
-
-  min-width: 34px;
+  width: 36px;
+  height: 36px;
 
   display: inline-flex;
 
   align-items: center;
   justify-content: center;
 
-  gap: 7px;
-
-  padding: 0 9px;
+  padding: 0;
 
   border:
-    1px solid #dce3ec;
+    1px solid
+    var(--ecos-border);
 
-  border-radius: 8px;
+  border-radius: 7px;
 
-  background: #ffffff;
+  background: var(--ecos-surface);
 
-  color: #4b5b70;
+  color: var(--ecos-primary);
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
 }
 
 .toolbar__actions button:hover:not(:disabled) {
-  background: #f3f6fa;
+  background: var(--ecos-beige-hover);
 
-  color: #14243a;
+  border-color: var(--ecos-border-strong);
 
-  border-color: #cbd6e1;
+  color: var(--ecos-accent);
+}
+
+.toolbar__actions button:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .toolbar__actions button:disabled {
-  opacity: 0.34;
+  opacity: 0.38;
+
+  cursor: not-allowed;
 }
 
-.toolbar__actions .button-primary {
-  padding-inline: 12px;
-
-  background: #12395b;
-
-  border-color: #12395b;
-
-  color: #ffffff;
-}
-
-.toolbar__actions .button-primary:hover:not(:disabled) {
-  background: #0e2f4c;
-
-  border-color: #0e2f4c;
-
-  color: #ffffff;
-}
+/* =========================================================
+   TOOLBAR DIVIDER
+   ========================================================= */
 
 .toolbar__divider {
   width: 1px;
@@ -317,7 +391,37 @@ kbd {
 
   margin: 0 3px;
 
-  background: #e3e8ef;
+  background: var(--ecos-border);
+}
+
+/* =========================================================
+   BOTÃO PRINCIPAL
+   ========================================================= */
+
+.toolbar__actions .button-primary {
+  width: auto;
+
+  min-width: 92px;
+
+  padding: 0 15px;
+
+  gap: 8px;
+
+  border-color: var(--ecos-primary);
+
+  background: var(--ecos-primary);
+
+  color: #ffffff;
+
+  font-weight: 750;
+}
+
+.toolbar__actions .button-primary:hover:not(:disabled) {
+  border-color: var(--ecos-primary-hover);
+
+  background: var(--ecos-primary-hover);
+
+  color: #ffffff;
 }
 
 /* =========================================================
@@ -333,15 +437,45 @@ kbd {
     286px
     minmax(0, 1fr)
     318px;
+
+  background: var(--ecos-beige);
 }
 
+/* =========================================================
+   PAINÉIS
+   ========================================================= */
+
 .panel {
-  background: #ffffff;
+  background: var(--ecos-panel);
 
   z-index: 10;
 
   overflow-y: auto;
+
+  scrollbar-color:
+    var(--ecos-border-strong)
+    transparent;
+
+  scrollbar-width: thin;
 }
+
+.panel::-webkit-scrollbar {
+  width: 7px;
+}
+
+.panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+
+  background: var(--ecos-border-strong);
+}
+
+/* =========================================================
+   PALETA
+   ========================================================= */
 
 .palette {
   padding:
@@ -351,8 +485,12 @@ kbd {
 
   border-right:
     1px solid
-    var(--border-default);
+    var(--ecos-border);
 }
+
+/* =========================================================
+   PROPERTIES PANEL
+   ========================================================= */
 
 .properties-panel {
   padding:
@@ -362,7 +500,7 @@ kbd {
 
   border-left:
     1px solid
-    var(--border-default);
+    var(--ecos-border);
 }
 
 /* =========================================================
@@ -384,19 +522,21 @@ kbd {
     0
     0;
 
+  color: var(--ecos-text);
+
   font-size: 16px;
 
   letter-spacing: -0.02em;
 }
 
 .eyebrow {
+  color: var(--ecos-primary);
+
   font-size: 9px;
 
   text-transform: uppercase;
 
   letter-spacing: 0.12em;
-
-  color: #8d99a8;
 
   font-weight: 850;
 }
@@ -407,11 +547,11 @@ kbd {
     0
     18px;
 
+  color: var(--ecos-text-secondary);
+
   font-size: 11px;
 
   line-height: 1.55;
-
-  color: #748196;
 }
 
 /* =========================================================
@@ -426,7 +566,6 @@ kbd {
   display: flex;
 
   justify-content: space-between;
-
   align-items: center;
 
   gap: 10px;
@@ -437,9 +576,9 @@ kbd {
 .palette-group__heading h3 {
   margin: 0;
 
-  font-size: 11px;
+  color: var(--ecos-primary);
 
-  color: #35445a;
+  font-size: 11px;
 }
 
 .palette-group__heading span {
@@ -449,9 +588,13 @@ kbd {
 
   border-radius: 999px;
 
-  background: #f1f5f9;
+  background: rgba(255, 255, 255, 0.68);
 
-  color: #7a8798;
+  color: var(--ecos-text-secondary);
+
+  border:
+    1px solid
+    var(--ecos-border-light);
 
   font-size: 9px;
 
@@ -464,7 +607,7 @@ kbd {
     0
     10px;
 
-  color: #8995a4;
+  color: var(--ecos-text-secondary);
 
   font-size: 9.5px;
 
@@ -508,12 +651,13 @@ kbd {
 
   text-align: left;
 
-  color: #263449;
+  color: var(--ecos-text);
 
-  background: #ffffff;
+  background: var(--ecos-surface);
 
   border:
-    1px solid #dce3ec;
+    1px solid
+    var(--ecos-border);
 
   border-radius: 9px;
 
@@ -521,15 +665,18 @@ kbd {
     border-color 0.15s,
     box-shadow 0.15s,
     transform 0.15s,
-    opacity 0.15s;
+    opacity 0.15s,
+    background 0.15s;
 }
 
 .palette-actor:hover:not(:disabled) {
-  border-color: #a9bdcf;
+  border-color: var(--ecos-accent);
+
+  background: #ffffff;
 
   box-shadow:
     0 5px 18px
-    rgba(24, 52, 78, 0.07);
+    rgba(34, 34, 34, 0.08);
 
   transform:
     translateY(-1px);
@@ -538,15 +685,20 @@ kbd {
 .palette-actor:disabled {
   opacity: 0.48;
 
-  background: #f8fafc;
+  background: var(--ecos-beige-soft);
 }
 
 .palette-actor__grip {
-  color: #a6b0bf;
+  color: var(--ecos-text-muted);
 }
 
 .palette-actor__plus {
-  color: #8090a3;
+  color: var(--ecos-primary);
+}
+
+.palette-actor:hover:not(:disabled)
+.palette-actor__plus {
+  color: var(--ecos-accent);
 }
 
 .palette-actor__content {
@@ -559,17 +711,17 @@ kbd {
 }
 
 .palette-actor__content strong {
+  color: var(--ecos-text);
+
   font-size: 10.5px;
 
   line-height: 1.2;
-
-  color: #2b394c;
 }
 
 .palette-actor__content small {
   margin-top: 3px;
 
-  color: #8793a2;
+  color: var(--ecos-text-secondary);
 
   font-size: 8.5px;
 
@@ -590,7 +742,8 @@ kbd {
   padding-top: 16px;
 
   border-top:
-    1px solid #edf0f4;
+    1px solid
+    var(--ecos-border);
 }
 
 .palette-shortcut-hint {
@@ -599,7 +752,7 @@ kbd {
     0
     0;
 
-  color: #7b8898;
+  color: var(--ecos-text-secondary);
 
   font-size: 9.5px;
 
@@ -611,10 +764,10 @@ kbd {
    ========================================================= */
 
 /**
- * As cores dos atores são determinadas semanticamente
- * pelo catálogo SSN.
+ * As cores abaixo pertencem à notação SSN.
  *
- * Todos os atores possuem borda preta sólida.
+ * Elas permanecem independentes da identidade visual
+ * geral da plataforma.
  */
 
 .actor-shape {
@@ -633,7 +786,7 @@ kbd {
   filter:
     drop-shadow(
       0 3px 5px
-      rgba(15, 23, 42, 0.10)
+      rgba(34, 34, 34, 0.10)
     );
 }
 
@@ -677,11 +830,11 @@ kbd {
   filter:
     drop-shadow(
       0 0 4px
-      rgba(37, 99, 235, 0.38)
+      rgba(79, 116, 135, 0.42)
     )
     drop-shadow(
       0 4px 7px
-      rgba(15, 23, 42, 0.12)
+      rgba(34, 34, 34, 0.12)
     );
 }
 
@@ -701,7 +854,7 @@ kbd {
 .actor-shape--invalid
 .actor-shape__svg polygon {
   stroke:
-    var(--danger-color);
+    var(--ecos-danger);
 
   stroke-width: 2.5;
 }
@@ -777,7 +930,7 @@ kbd {
 }
 
 /* =========================================================
-   IDENTIDADE VISUAL DOS ATORES SSN
+   IDENTIDADE DOS ATORES SSN
    ========================================================= */
 
 /* Companhia de Interesse */
@@ -843,12 +996,6 @@ kbd {
   line-height: 1.1;
 }
 
-/**
- * O tipo do ator NÃO é exibido dentro da forma.
- *
- * Somente o nome concreto do ator aparece no canvas.
- */
-
 .actor-node__content strong {
   display: block;
 
@@ -890,7 +1037,7 @@ kbd {
 
   background: #ffffff;
 
-  color: #dc2626;
+  color: var(--ecos-danger);
 
   box-shadow:
     0 2px 7px
@@ -908,9 +1055,10 @@ kbd {
   height: 10px;
 
   border:
-    2px solid #ffffff;
+    2px solid
+    #ffffff;
 
-  background: #111827;
+  background: #222222;
 
   opacity: 0;
 
@@ -953,6 +1101,14 @@ kbd {
 
   background:
     var(--canvas-background);
+
+  border-left:
+    1px solid
+    rgba(216, 214, 204, 0.25);
+
+  border-right:
+    1px solid
+    rgba(216, 214, 204, 0.25);
 }
 
 .canvas-shell
@@ -964,45 +1120,63 @@ kbd {
 .canvas-shell
 .react-flow__minimap {
   border:
-    1px solid #dce4ed;
+    1px solid
+    var(--ecos-border);
 
   border-radius: 9px;
 
   overflow: hidden;
 
   box-shadow:
-    0 6px 20px
-    rgba(30, 50, 70, 0.08);
+    var(--ecos-shadow);
 
-  background: #ffffff;
+  background:
+    var(--ecos-surface);
 }
 
 .canvas-shell
 .react-flow__controls {
   border:
-    1px solid #dce4ed;
+    1px solid
+    var(--ecos-border);
 
   box-shadow:
-    0 6px 20px
-    rgba(30, 50, 70, 0.08);
+    var(--ecos-shadow);
 
   border-radius: 9px;
 
   overflow: hidden;
+
+  background:
+    var(--ecos-surface);
 }
 
 .canvas-shell
 .react-flow__controls-button {
-  border-bottom-color: #edf1f5;
+  border-bottom-color:
+    var(--ecos-border-light);
+
+  background:
+    var(--ecos-surface);
+
+  color:
+    var(--ecos-primary);
+}
+
+.canvas-shell
+.react-flow__controls-button:hover {
+  background:
+    var(--ecos-beige-soft);
 }
 
 .canvas-shell
 .react-flow__selection {
   background:
-    rgba(37, 99, 235, 0.07);
+    rgba(79, 116, 135, 0.08);
 
   border:
-    1px dashed #2563eb;
+    1px dashed
+    var(--ecos-accent);
 }
 
 .react-flow__node {
@@ -1014,27 +1188,19 @@ kbd {
 }
 
 /* =========================================================
-   RELAÇÃO COMERCIAL — EDGE
+   RELAÇÃO COMERCIAL
    ========================================================= */
-
-/**
- * Somente o path real gerado pelo BaseEdge recebe
- * estilização.
- *
- * Isso evita alterar o path transparente utilizado
- * apenas para aumentar a área clicável.
- */
 
 .react-flow__edge
 .react-flow__edge-path {
-  stroke: #111827;
+  stroke: #222222;
 
   stroke-width: 1.7;
 }
 
 .react-flow__edge:hover
 .react-flow__edge-path {
-  stroke: #111827;
+  stroke: #222222;
 
   stroke-width: 2.1;
 }
@@ -1048,7 +1214,7 @@ kbd {
 }
 
 /* =========================================================
-   ÁREA DE INTERAÇÃO DA RELAÇÃO COMERCIAL
+   ÁREA DE INTERAÇÃO DA RELAÇÃO
    ========================================================= */
 
 .commercial-relationship-edge__interaction {
@@ -1063,22 +1229,8 @@ kbd {
 }
 
 /* =========================================================
-   FLUXOS SOBRE A RELAÇÃO COMERCIAL
+   FLUXOS SSN
    ========================================================= */
-
-/**
- * Todos os Fluxos ocupam inicialmente a mesma célula.
- *
- * O componente aplica translateY individualmente.
- *
- * Dessa forma:
- *
- *        [ P.1 ]
- * ────── [ S.1 ] ──────
- *        [ F.1 ]
- *
- * permanece centralizado sobre a Relação Comercial.
- */
 
 .commercial-relationship-edge__flows {
   display: grid;
@@ -1090,76 +1242,98 @@ kbd {
   pointer-events: all;
 }
 
+/*
+ * O botão funciona somente como área interativa.
+ * O desenho pentagonal é responsabilidade do SVG.
+ */
+
 .commercial-relationship-edge__flow {
   grid-area:
     1
     /
     1;
 
-  min-width: 38px;
+  width: 60px;
+  height: 30px;
 
-  height: 24px;
+  padding: 0;
 
-  padding:
-    0
-    7px;
+  display: block;
 
-  display: inline-flex;
+  border: 0;
 
-  align-items: center;
-  justify-content: center;
+  background: transparent;
 
-  border:
-    1.5px solid #111827;
+  box-shadow: none;
 
-  border-radius: 2px;
+  cursor: pointer;
+}
 
-  background: #ffffff;
+.commercial-relationship-edge__flow-svg {
+  display: block;
 
-  color: #111827;
+  width: 100%;
+  height: 100%;
+
+  overflow: visible;
+
+  pointer-events: none;
+}
+
+.commercial-relationship-edge__flow-shape {
+  fill: #ffffff;
+
+  stroke: #222222;
+
+  stroke-width: 1.5;
+
+  transition:
+    stroke 0.14s ease,
+    filter 0.14s ease;
+}
+
+.commercial-relationship-edge__flow-text {
+  fill: #222222;
 
   font-size: 10px;
 
   font-weight: 800;
 
-  line-height: 1;
+  pointer-events: none;
 
-  white-space: nowrap;
-
-  cursor: pointer;
-
-  box-shadow:
-    0 1px 3px
-    rgba(15, 23, 42, 0.12);
-
-  transition:
-    border-color 0.14s ease,
-    box-shadow 0.14s ease,
-    background 0.14s ease;
+  user-select: none;
 }
 
-.commercial-relationship-edge__flow:hover {
-  background: #f8fafc;
+.commercial-relationship-edge__flow:hover
+.commercial-relationship-edge__flow-shape {
+  stroke:
+    var(--ecos-accent);
 
-  border-color:
-    var(--selection-color);
-
-  box-shadow:
-    0 2px 6px
-    rgba(37, 99, 235, 0.18);
+  filter:
+    drop-shadow(
+      0 2px 3px
+      rgba(79, 116, 135, 0.20)
+    );
 }
 
-.commercial-relationship-edge__flow--selected {
-  border-color:
-    var(--selection-color);
+.commercial-relationship-edge__flow--selected
+.commercial-relationship-edge__flow-shape {
+  stroke:
+    var(--ecos-accent);
 
-  outline:
-    2px solid
-    rgba(37, 99, 235, 0.16);
+  stroke-width: 2;
 
-  background: #ffffff;
+  filter:
+    drop-shadow(
+      0 0 3px
+      rgba(79, 116, 135, 0.26)
+    );
+}
 
-  color: #1d4ed8;
+.commercial-relationship-edge__flow--selected
+.commercial-relationship-edge__flow-text {
+  fill:
+    var(--ecos-accent-hover);
 }
 
 /* =========================================================
@@ -1183,18 +1357,19 @@ kbd {
     10px;
 
   border:
-    1px solid #dfe5ed;
+    1px solid
+    var(--ecos-border);
 
   border-radius: 999px;
 
   background:
-    rgba(255, 255, 255, 0.93);
+    rgba(255, 255, 255, 0.95);
 
   box-shadow:
     0 6px 22px
-    rgba(25, 45, 65, 0.06);
+    rgba(34, 34, 34, 0.06);
 
-  color: #768498;
+  color: var(--ecos-text-secondary);
 
   font-size: 9px;
 
@@ -1225,7 +1400,8 @@ kbd {
   width: 3px;
   height: 3px;
 
-  background: #a7b1be;
+  background:
+    var(--ecos-text-muted);
 
   border-radius: 50%;
 }
@@ -1251,9 +1427,11 @@ kbd {
 
   border-radius: 999px;
 
-  background: #eaf2f8;
+  background:
+    var(--ecos-accent-soft);
 
-  color: #204e70;
+  color:
+    var(--ecos-accent-hover);
 
   font-size: 9px;
 
@@ -1278,11 +1456,13 @@ kbd {
   padding: 10px;
 
   border:
-    1px solid #e0e6ed;
+    1px solid
+    var(--ecos-border);
 
   border-radius: 10px;
 
-  background: #f9fbfd;
+  background:
+    var(--ecos-surface);
 }
 
 .actor-preview
@@ -1298,9 +1478,10 @@ kbd {
 
   margin-top: 3px;
 
-  font-size: 11px;
+  color:
+    var(--ecos-primary);
 
-  color: #314155;
+  font-size: 11px;
 }
 
 /* =========================================================
@@ -1314,7 +1495,8 @@ kbd {
 
   gap: 6px;
 
-  color: #59697d;
+  color:
+    var(--ecos-text-secondary);
 
   font-size: 10.5px;
 
@@ -1331,13 +1513,16 @@ kbd {
     10px;
 
   border:
-    1px solid #d9e1ea;
+    1px solid
+    var(--ecos-border);
 
   border-radius: 8px;
 
-  background: #ffffff;
+  background:
+    var(--ecos-surface);
 
-  color: #243348;
+  color:
+    var(--ecos-text);
 
   font-size: 11.5px;
 
@@ -1348,25 +1533,36 @@ kbd {
   resize: vertical;
 }
 
+.form-stack input:hover,
+.form-stack select:hover,
+.form-stack textarea:hover {
+  border-color:
+    var(--ecos-border-strong);
+}
+
 .form-stack input:focus,
 .form-stack select:focus,
 .form-stack textarea:focus {
   outline:
     2px solid
-    rgba(42, 113, 163, 0.13);
+    var(--selection-ring);
 
-  border-color: #7da6c4;
+  border-color:
+    var(--ecos-accent);
 }
 
 .form-stack
 .field-invalid {
-  border-color: #ef4444;
+  border-color:
+    var(--ecos-danger);
 
-  background: #fffafa;
+  background:
+    var(--ecos-danger-soft);
 }
 
 .field-help {
-  color: #8a96a5;
+  color:
+    var(--ecos-text-muted);
 
   font-size: 9px;
 
@@ -1376,7 +1572,8 @@ kbd {
 }
 
 .field-error {
-  color: #c7353f;
+  color:
+    var(--ecos-danger);
 
   font-size: 9px;
 
@@ -1409,13 +1606,16 @@ button:not(
     10px;
 
   border:
-    1px solid #d7e0e9;
+    1px solid
+    var(--ecos-border);
 
   border-radius: 8px;
 
-  background: #ffffff;
+  background:
+    var(--ecos-surface);
 
-  color: #405269;
+  color:
+    var(--ecos-primary);
 
   font-size: 10px;
 
@@ -1428,13 +1628,15 @@ button:not(
 ):not(
   .relationship-flow-item
 ):hover {
-  background: #f3f6f9;
+  background:
+    var(--ecos-beige-hover);
 
-  border-color: #bdcad7;
+  border-color:
+    var(--ecos-border-strong);
 }
 
 /* =========================================================
-   DEFINIÇÃO SSN / BLOCO INFORMATIVO
+   DEFINIÇÃO SSN
    ========================================================= */
 
 .actor-definition {
@@ -1447,17 +1649,20 @@ button:not(
   padding: 11px;
 
   border:
-    1px solid #e1e7ee;
+    1px solid
+    var(--ecos-border);
 
   border-radius: 9px;
 
-  background: #f9fbfd;
+  background:
+    var(--ecos-surface);
 }
 
 .actor-definition > p {
   margin: 0;
 
-  color: #647287;
+  color:
+    var(--ecos-text-secondary);
 
   font-size: 10px;
 
@@ -1467,7 +1672,8 @@ button:not(
 }
 
 .actor-definition > small {
-  color: #8a96a5;
+  color:
+    var(--ecos-text-muted);
 
   font-size: 9px;
 
@@ -1487,7 +1693,8 @@ button:not(
 
   text-align: center;
 
-  color: #7d8999;
+  color:
+    var(--ecos-text-secondary);
 }
 
 .empty-properties__icon {
@@ -1503,21 +1710,28 @@ button:not(
   width: 42px;
   height: 42px;
 
-  background: #f1f4f7;
+  background:
+    rgba(255, 255, 255, 0.72);
+
+  border:
+    1px solid
+    var(--ecos-border-light);
 
   border-radius: 12px;
 
   font-size: 22px;
 
-  color: #95a2b2;
+  color:
+    var(--ecos-primary);
 }
 
 .empty-properties strong {
   display: block;
 
-  font-size: 11px;
+  color:
+    var(--ecos-primary);
 
-  color: #536276;
+  font-size: 11px;
 }
 
 .empty-properties p {
@@ -1534,11 +1748,13 @@ button:not(
   padding: 14px;
 
   border:
-    1px solid #dfe6ee;
+    1px solid
+    var(--ecos-border);
 
   border-radius: 10px;
 
-  background: #fafcff;
+  background:
+    var(--ecos-surface);
 }
 
 .multi-properties > strong {
@@ -1546,9 +1762,10 @@ button:not(
 
   margin-top: 11px;
 
-  font-size: 12px;
+  color:
+    var(--ecos-primary);
 
-  color: #324258;
+  font-size: 12px;
 }
 
 .multi-properties > p {
@@ -1557,7 +1774,8 @@ button:not(
     0
     12px;
 
-  color: #7c8999;
+  color:
+    var(--ecos-text-secondary);
 
   font-size: 10px;
 }
@@ -1572,13 +1790,16 @@ button:not(
   height: 34px;
 
   border:
-    1px solid #d9e2eb;
+    1px solid
+    var(--ecos-border);
 
   border-radius: 8px;
 
-  background: #ffffff;
+  background:
+    var(--ecos-surface);
 
-  color: #46586e;
+  color:
+    var(--ecos-primary);
 
   display: flex;
 
@@ -1593,7 +1814,8 @@ button:not(
 }
 
 .multi-properties__actions button:hover {
-  background: #f3f6f9;
+  background:
+    var(--ecos-beige-hover);
 }
 
 /* =========================================================
@@ -1615,11 +1837,13 @@ button:not(
   padding: 10px;
 
   border:
-    1px solid #e1e7ee;
+    1px solid
+    var(--ecos-border);
 
   border-radius: 10px;
 
-  background: #f9fbfd;
+  background:
+    var(--ecos-surface);
 }
 
 .relationship-summary div {
@@ -1629,7 +1853,8 @@ button:not(
 .relationship-summary span {
   display: block;
 
-  color: #8b97a6;
+  color:
+    var(--ecos-text-muted);
 
   font-size: 8px;
 
@@ -1649,9 +1874,10 @@ button:not(
 
   white-space: nowrap;
 
-  font-size: 10px;
+  color:
+    var(--ecos-primary);
 
-  color: #35455a;
+  font-size: 10px;
 }
 
 .relationship-summary__arrow {
@@ -1661,7 +1887,7 @@ button:not(
     15px !important;
 
   color:
-    #718096 !important;
+    var(--ecos-text-secondary) !important;
 }
 
 /* =========================================================
@@ -1696,11 +1922,13 @@ button:not(
     8px;
 
   border:
-    1px solid #dce3eb;
+    1px solid
+    var(--ecos-border);
 
   border-radius: 7px;
 
-  background: #ffffff;
+  background:
+    var(--ecos-surface);
 
   text-align: left;
 
@@ -1712,9 +1940,11 @@ button:not(
 }
 
 .relationship-flow-item:hover {
-  background: #f5f8fb;
+  background:
+    var(--ecos-beige-hover);
 
-  border-color: #b8c8d8;
+  border-color:
+    var(--ecos-accent);
 }
 
 .relationship-flow-item strong {
@@ -1732,13 +1962,16 @@ button:not(
     5px;
 
   border:
-    1px solid #111827;
+    1px solid
+    #222222;
 
   border-radius: 2px;
 
-  background: #ffffff;
+  background:
+    #ffffff;
 
-  color: #111827;
+  color:
+    #222222;
 
   font-size: 9px;
 
@@ -1754,7 +1987,8 @@ button:not(
 
   white-space: nowrap;
 
-  color: #607086;
+  color:
+    var(--ecos-text-secondary);
 
   font-size: 9.5px;
 }
@@ -1777,13 +2011,16 @@ button:not(
   gap: 7px;
 
   border:
-    1px solid #efc8ca;
+    1px solid
+    #e1b7b3;
 
   border-radius: 8px;
 
-  background: #ffffff;
+  background:
+    var(--ecos-surface);
 
-  color: #a33e45;
+  color:
+    var(--ecos-danger);
 
   font-size: 10.5px;
 
@@ -1791,7 +2028,8 @@ button:not(
 }
 
 .danger-button:hover {
-  background: #fff5f5;
+  background:
+    var(--ecos-danger-soft);
 }
 
 /* =========================================================
@@ -1814,7 +2052,8 @@ button:not(
   padding: 7px;
 
   border:
-    1px solid #d9e1ea;
+    1px solid
+    var(--ecos-border);
 
   border-radius: 11px;
 
@@ -1828,7 +2067,7 @@ button:not(
 
   box-shadow:
     0 16px 42px
-    rgba(15, 23, 42, 0.18);
+    rgba(34, 34, 34, 0.18);
 
   backdrop-filter:
     blur(10px);
@@ -1840,7 +2079,8 @@ button:not(
     8px
     8px;
 
-  color: #8a96a6;
+  color:
+    var(--ecos-primary);
 
   font-size: 9px;
 
@@ -1857,7 +2097,8 @@ button:not(
     8px
     8px;
 
-  color: #7b8797;
+  color:
+    var(--ecos-text-secondary);
 
   font-size: 9px;
 
@@ -1879,7 +2120,8 @@ button:not(
 
   background: transparent;
 
-  color: #3d4c60;
+  color:
+    var(--ecos-primary);
 
   display: grid;
 
@@ -1898,7 +2140,8 @@ button:not(
 }
 
 .context-menu button:hover:not(:disabled) {
-  background: #f1f5f9;
+  background:
+    var(--ecos-beige-soft);
 }
 
 .context-menu button:disabled {
@@ -1919,12 +2162,13 @@ button:not(
     6px
     4px;
 
-  background: #edf1f5;
+  background:
+    var(--ecos-border-light);
 }
 
 .context-menu__danger {
   color:
-    #b33d47 !important;
+    var(--ecos-danger) !important;
 }
 
 /* =========================================================
@@ -1954,15 +2198,17 @@ button:not(
     13px;
 
   border:
-    1px solid #dbe3eb;
+    1px solid
+    var(--ecos-border);
 
   border-radius: 10px;
 
-  background: #ffffff;
+  background:
+    var(--ecos-surface);
 
   box-shadow:
     0 14px 36px
-    rgba(15, 23, 42, 0.15);
+    rgba(34, 34, 34, 0.15);
 
   font-size: 10.5px;
 
@@ -2008,37 +2254,53 @@ button:not(
 
 .editor-notice__close:hover {
   background:
-    rgba(15, 23, 42, 0.06);
+    rgba(34, 34, 34, 0.06);
 
   opacity: 1;
 }
 
 .editor-notice--success {
-  color: #166534;
+  color:
+    var(--ecos-success);
 
-  border-color: #bbdfc3;
+  border-color:
+    #b9d6c8;
 
-  background: #f5fff7;
+  background:
+    var(--ecos-success-soft);
 }
 
 .editor-notice--warning {
-  color: #8a4b08;
+  color:
+    var(--ecos-warning);
 
-  border-color: #f0d19d;
+  border-color:
+    #ead3a3;
 
-  background: #fffaf0;
+  background:
+    var(--ecos-warning-soft);
 }
 
 .editor-notice--error {
-  color: #9f2731;
+  color:
+    var(--ecos-danger);
 
-  border-color: #ecc4c7;
+  border-color:
+    #e7c0bd;
 
-  background: #fff7f7;
+  background:
+    var(--ecos-danger-soft);
 }
 
 .editor-notice--info {
-  color: #285774;
+  color:
+    var(--ecos-accent-hover);
+
+  border-color:
+    #cbd9df;
+
+  background:
+    var(--ecos-accent-soft);
 }
 
 /* =========================================================
@@ -2077,13 +2339,23 @@ button:not(
 
   .toolbar {
     grid-template-columns:
-      220px
       minmax(190px, 1fr)
       auto;
+
+    gap: 14px;
   }
 
   .toolbar__actions button {
-    padding-inline: 7px;
+    width: 34px;
+    height: 34px;
+  }
+
+  .toolbar__actions .button-primary {
+    width: auto;
+
+    min-width: 84px;
+
+    padding-inline: 12px;
   }
 
   .palette-actor {
@@ -2096,5 +2368,48 @@ button:not(
 
   .actor-shape--compact {
     width: 55px;
+  }
+}
+
+@media (
+  max-width: 950px
+) {
+  .toolbar {
+    grid-template-columns:
+      minmax(180px, 1fr)
+      auto;
+
+    gap: 12px;
+
+    padding-inline: 12px;
+  }
+
+  .model-title > span {
+    display: none;
+  }
+
+  .model-title input {
+    width: 100%;
+  }
+
+  .toolbar__actions {
+    gap: 4px;
+  }
+
+  .toolbar__actions button {
+    width: 34px;
+    height: 34px;
+  }
+
+  .toolbar__actions .button-primary {
+    width: 34px;
+
+    min-width: 34px;
+
+    padding: 0;
+  }
+
+  .toolbar__actions .button-primary span {
+    display: none;
   }
 }

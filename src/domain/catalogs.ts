@@ -89,7 +89,7 @@ export const ACTOR_TYPES: ActorTypeDefinition[] = [
       'company_of_interest',
 
     label:
-      'Companhia de Interesse',
+      'Empresa de Interesse',
 
     shortLabel:
       'CoI',
@@ -98,7 +98,7 @@ export const ACTOR_TYPES: ActorTypeDefinition[] = [
       'direct',
 
     description:
-      'Companhia que entrega o produto de interesse que está sob análise no ecossistema.',
+      'Empresa que entrega o produto de interesse que está sob análise no ecossistema.',
 
     shape:
       'rectangle',

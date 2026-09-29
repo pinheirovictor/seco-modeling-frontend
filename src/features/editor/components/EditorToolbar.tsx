@@ -15,11 +15,10 @@ import {
 } from '../store/editorStore';
 
 /**
- * Barra superior principal do editor da ECOS Modeling.
+ * Barra de ferramentas do editor de modelagem.
  *
  * Responsabilidades:
  *
- * - identificação da ferramenta;
  * - edição do nome do modelo;
  * - Undo/Redo;
  * - copiar/colar/duplicar atores;
@@ -27,6 +26,9 @@ import {
  * - criação de novo modelo;
  * - exportação;
  * - salvamento local.
+ *
+ * A identificação "ECOS Modeling" pertence ao cabeçalho
+ * global da plataforma e não é repetida nesta toolbar.
  *
  * A Toolbar não contém regras da notação SSN.
  * Essas regras permanecem no domínio/store.
@@ -198,25 +200,6 @@ export function EditorToolbar() {
       className="toolbar"
       aria-label="Barra de ferramentas do editor"
     >
-      {/* ===================================================
-          MARCA
-          =================================================== */}
-
-      <div className="brand">
-        <div
-          className="brand__mark"
-          aria-hidden="true"
-        >
-          E
-        </div>
-
-        <div>
-          <strong>
-            ECOS Modeling
-          </strong>
-        </div>
-      </div>
-
       {/* ===================================================
           MODELO
           =================================================== */}
@@ -440,6 +423,7 @@ export function EditorToolbar() {
           type="button"
           className="button-primary"
           title="Salvar modelo localmente"
+          aria-label="Salvar modelo localmente"
           onClick={() => {
             saveLocal(
               false,
