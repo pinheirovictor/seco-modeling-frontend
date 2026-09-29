@@ -5,7 +5,7 @@
 /**
  * Versão atual do modelo canônico da ECOS Modeling 4.0.
  *
- * Enquanto a estrutura do modelo estiver em desenvolvimento,
+ * Enquanto a estrutura ainda estiver em evolução,
  * utilizamos o sufixo "draft".
  */
 export const MODEL_SCHEMA_VERSION =
@@ -15,12 +15,24 @@ export type ModelSchemaVersion =
   typeof MODEL_SCHEMA_VERSION;
 
 /* =========================================================
+   POSIÇÃO
+   ========================================================= */
+
+/**
+ * Coordenada de um elemento no canvas.
+ */
+export interface Position {
+  x: number;
+  y: number;
+}
+
+/* =========================================================
    ATORES SSN
    ========================================================= */
 
 /**
- * Tipos de atores definidos pela notação SSN utilizada
- * pela ECOS Modeling.
+ * Tipos de atores utilizados pela notação SSN
+ * da ECOS Modeling.
  *
  * Atores diretos:
  * - Companhia de Interesse
@@ -40,119 +52,220 @@ export type ActorType =
   | 'customer_of_customer'
   | 'aggregator';
 
-/* =========================================================
-   POSIÇÃO
-   ========================================================= */
-
-/**
- * Posição visual de um elemento no canvas.
- *
- * A posição faz parte do modelo porque deve ser preservada
- * ao salvar, exportar, importar e versionar um modelo.
- */
-export interface Position {
-  x: number;
-  y: number;
-}
-
-/* =========================================================
-   ATOR
-   ========================================================= */
-
 /**
  * Representação canônica de um ator SSN.
  *
- * Informações de apresentação visual como:
- *
- * - cor;
- * - forma;
- * - ícone;
- * - tamanho;
- *
- * NÃO são armazenadas aqui.
- *
- * Elas são definidas pelo catálogo SSN a partir de ActorType.
+ * Informações visuais como cor e forma não são
+ * armazenadas aqui. Elas são determinadas pelo
+ * catálogo SSN a partir do ActorType.
  */
 export interface Actor {
   /**
-   * Identificador único do ator dentro do modelo.
+   * Identificador único do ator.
    */
   id: string;
 
   /**
-   * Nome do ator no ecossistema modelado.
+   * Nome concreto do ator no ecossistema.
    *
-   * Ex.:
-   * GitHub
-   * Microsoft
-   * Desenvolvedor
+   * Exemplos:
+   * - GitHub
+   * - Unity
+   * - Professores
+   * - Google Drive
    */
   name: string;
 
   /**
-   * Papel do ator segundo a notação SSN.
+   * Tipo do ator segundo a notação SSN.
    */
   type: ActorType;
 
   /**
-   * Descrição específica da participação deste ator
-   * no ecossistema representado.
-   *
-   * Esta descrição é diferente da definição formal
-   * do tipo de ator existente em catalogs.ts.
+   * Descrição específica da participação do ator
+   * no ecossistema modelado.
    */
   description: string;
 
   /**
-   * Posição do ator no diagrama.
+   * Posição no canvas.
    */
   position: Position;
 }
 
 /* =========================================================
-   RELAÇÕES — ESTRUTURA PROVISÓRIA
+   RELAÇÃO COMERCIAL
    ========================================================= */
 
 /**
+ * Relação Comercial da notação SSN.
+ *
+ * Uma Relação Comercial conecta exatamente dois atores.
+ *
  * IMPORTANTE:
  *
- * Esta enumeração ainda pertence ao MVP inicial.
+ * A Relação Comercial NÃO possui direção.
  *
- * Pela definição formal da SSN, posteriormente vamos
- * representar separadamente:
+ * Visualmente ela é representada por uma linha preta,
+ * sólida e sem seta.
  *
- * - Relação Comercial;
- * - Fluxo;
- * - OU Gateway;
- * - XOU Gateway.
+ * A direção pertence aos Fluxos associados a ela.
  *
- * Portanto, RelationshipType não representa ainda
- * a estrutura definitiva da notação.
+ * Exemplo:
+ *
+ * Fornecedor ───────────────── Companhia de Interesse
+ *
+ * Esta linha representa apenas a existência de uma
+ * relação comercial entre os dois atores.
  */
-export type RelationshipType =
+export interface CommercialRelationship {
+  /**
+   * Identificador único da relação.
+   */
+  id: string;
+
+  /**
+   * Primeiro ator participante da relação.
+   */
+  actorAId: string;
+
+  /**
+   * Segundo ator participante da relação.
+   */
+  actorBId: string;
+
+  /**
+   * Descrição opcional da relação comercial.
+   */
+  description: string;
+}
+
+/* =========================================================
+   FLUXOS
+   ========================================================= */
+
+/**
+ * Tipos de fluxo utilizados pela notação SSN.
+ *
+ * Cada tipo possui posteriormente uma representação
+ * textual como:
+ *
+ * Produto     -> P
+ * Serviço     -> S
+ * Financeiro  -> F
+ * Conteúdo    -> C
+ */
+export type FlowType =
   | 'product'
   | 'service'
   | 'financial'
-  | 'information';
+  | 'content';
 
 /**
- * Representação temporária de uma conexão entre atores.
+ * Um Fluxo representa um artefato ou serviço transferido
+ * de um ator para outro dentro de uma Relação Comercial.
  *
- * Esta interface será substituída/refatorada quando
- * implementarmos formalmente Relações Comerciais e Fluxos.
+ * Diferentemente da Relação Comercial, o Fluxo possui
+ * direção.
+ *
+ * Exemplo:
+ *
+ * Unity ───────── [ P.1 ] ───────── SkinnerBox
+ *
+ * onde:
+ *
+ * P = Produto
+ * 1 = identificador do fluxo
  */
-export interface Relationship {
+export interface Flow {
+  /**
+   * Identificador interno único.
+   */
   id: string;
 
+  /**
+   * Relação Comercial à qual este fluxo pertence.
+   */
+  commercialRelationshipId: string;
+
+  /**
+   * Ator de origem do fluxo.
+   */
   sourceActorId: string;
 
+  /**
+   * Ator de destino do fluxo.
+   */
   targetActorId: string;
 
-  type: RelationshipType;
+  /**
+   * Tipo do fluxo.
+   */
+  type: FlowType;
 
+  /**
+   * Número utilizado na representação visual.
+   *
+   * Exemplo:
+   *
+   * type = product
+   * identifier = 1
+   *
+   * representação:
+   *
+   * P.1
+   */
+  identifier: number;
+
+  /**
+   * Nome opcional utilizado para descrever semanticamente
+   * o fluxo.
+   *
+   * Exemplo:
+   *
+   * "Licença do Unity"
+   * "Serviço de armazenamento"
+   */
   name: string;
 
+  /**
+   * Descrição detalhada opcional.
+   */
   description: string;
+}
+
+/* =========================================================
+   GATEWAYS
+   ========================================================= */
+
+/**
+ * Tipos de Gateway definidos pela notação SSN.
+ *
+ * OR:
+ * permite um ou mais fluxos.
+ *
+ * XOR:
+ * permite apenas uma alternativa.
+ */
+export type GatewayType =
+  | 'or'
+  | 'xor';
+
+/**
+ * Estrutura reservada para os Gateways SSN.
+ *
+ * A representação e as regras de conexão serão
+ * implementadas em uma próxima etapa.
+ *
+ * Já incluímos o conceito no modelo para evitar nova
+ * ruptura da estrutura de persistência em seguida.
+ */
+export interface Gateway {
+  id: string;
+
+  type: GatewayType;
+
+  position: Position;
 }
 
 /* =========================================================
@@ -160,31 +273,28 @@ export interface Relationship {
    ========================================================= */
 
 /**
- * Modelo canônico da ECOS Modeling.
+ * Representação canônica de um modelo SSN.
  *
- * Essa estrutura deve permanecer independente do React Flow.
- *
- * React Flow recebe uma adaptação desse modelo para gerar
- * nodes e edges no editor.
+ * Esta estrutura é independente do React Flow.
  */
 export interface EcosystemModel {
   /**
-   * Versão da estrutura de persistência.
+   * Versão da estrutura do modelo.
    */
   schemaVersion: ModelSchemaVersion;
 
   /**
-   * Identificador único do modelo.
+   * Identificador único.
    */
   id: string;
 
   /**
-   * Nome do ecossistema/modelo.
+   * Nome do modelo/ecossistema.
    */
   name: string;
 
   /**
-   * Descrição geral do ecossistema.
+   * Descrição geral.
    */
   description: string;
 
@@ -194,15 +304,32 @@ export interface EcosystemModel {
   actors: Actor[];
 
   /**
-   * Estrutura provisória de relacionamentos.
+   * Relações Comerciais.
    *
-   * Será substituída posteriormente pela representação
-   * formal de Relação Comercial, Fluxo e Gateways.
+   * Visualmente:
+   *
+   * Ator ───────────────── Ator
    */
-  relationships: Relationship[];
+  commercialRelationships: CommercialRelationship[];
 
   /**
-   * Última alteração realizada no modelo.
+   * Fluxos associados às Relações Comerciais.
+   *
+   * Visualmente:
+   *
+   * ───────── [ P.1 ] ─────────
+   */
+  flows: Flow[];
+
+  /**
+   * Gateways OU/XOU.
+   *
+   * A implementação visual será feita posteriormente.
+   */
+  gateways: Gateway[];
+
+  /**
+   * Data/hora da última modificação.
    */
   updatedAt: string;
 }
@@ -212,18 +339,24 @@ export interface EcosystemModel {
    ========================================================= */
 
 /**
- * Estado da seleção visual do editor.
+ * Seleção atual do editor.
  *
- * Permite seleção simples e múltipla.
+ * Já separamos os tipos de elementos para que o painel
+ * de propriedades consiga tratar cada conceito SSN
+ * individualmente.
  */
 export interface EditorSelection {
   actorIds: string[];
 
-  relationshipIds: string[];
+  commercialRelationshipIds: string[];
+
+  flowIds: string[];
+
+  gatewayIds: string[];
 }
 
 /* =========================================================
-   NOTIFICAÇÕES DO EDITOR
+   NOTIFICAÇÕES
    ========================================================= */
 
 export type EditorNoticeTone =

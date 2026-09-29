@@ -7,7 +7,6 @@ import {
   ReactFlowProvider,
   useReactFlow,
   type Connection,
-  type Edge,
   type NodeChange,
   type OnSelectionChangeParams,
 } from '@xyflow/react';
@@ -28,6 +27,10 @@ import {
 } from './ActorNode';
 
 import {
+  CommercialRelationshipEdge,
+} from './CommercialRelationshipEdge';
+
+import {
   EditorContextMenu,
   type EditorContext,
 } from './EditorContextMenu';
@@ -40,6 +43,7 @@ import {
   toFlowEdges,
   toFlowNodes,
   type ActorFlowNode,
+  type CommercialRelationshipFlowEdge,
 } from '../adapters/reactFlowAdapter';
 
 /* =========================================================
@@ -47,21 +51,37 @@ import {
    ========================================================= */
 
 /**
- * Tipos visuais reconhecidos pelo React Flow.
+ * Tipos de nodes reconhecidos pelo React Flow.
  *
- * Nesta etapa temos apenas atores SSN.
+ * Atualmente:
  *
- * Posteriormente poderão existir também:
+ * - actor
  *
- * - Fluxo;
- * - OU Gateway;
- * - XOU Gateway;
- *
- * Relação Comercial provavelmente continuará sendo
- * representada como edge.
+ * Gateways serão adicionados posteriormente como nodes.
  */
 const nodeTypes = {
-  actor: ActorNode,
+  actor:
+    ActorNode,
+};
+
+/* =========================================================
+   EDGE TYPES
+   ========================================================= */
+
+/**
+ * Relação Comercial é representada como um edge customizado.
+ *
+ * A Relação Comercial:
+ *
+ * - conecta dois atores;
+ * - não possui direção;
+ * - não possui seta;
+ * - utiliza linha preta sólida;
+ * - pode possuir um ou mais Fluxos.
+ */
+const edgeTypes = {
+  commercialRelationship:
+    CommercialRelationshipEdge,
 };
 
 /* =========================================================
@@ -69,95 +89,109 @@ const nodeTypes = {
    ========================================================= */
 
 function EditorCanvasInner() {
-  /* -------------------------------------------------------
+  /* =======================================================
      STORE
-     ------------------------------------------------------- */
+     ======================================================= */
 
   const model =
     useEditorStore(
-      (state) => state.model,
+      (state) =>
+        state.model,
     );
 
   const selection =
     useEditorStore(
-      (state) => state.selection,
+      (state) =>
+        state.selection,
     );
 
   const addActor =
     useEditorStore(
-      (state) => state.addActor,
+      (state) =>
+        state.addActor,
     );
 
   const moveActor =
     useEditorStore(
-      (state) => state.moveActor,
+      (state) =>
+        state.moveActor,
     );
 
-  const addRelationship =
+  const addCommercialRelationship =
     useEditorStore(
-      (state) => state.addRelationship,
+      (state) =>
+        state.addCommercialRelationship,
     );
 
   const setSelection =
     useEditorStore(
-      (state) => state.setSelection,
+      (state) =>
+        state.setSelection,
     );
 
   const clearSelection =
     useEditorStore(
-      (state) => state.clearSelection,
+      (state) =>
+        state.clearSelection,
     );
 
   const selectOnlyActor =
     useEditorStore(
-      (state) => state.selectOnlyActor,
+      (state) =>
+        state.selectOnlyActor,
     );
 
-  const selectOnlyRelationship =
+  const selectOnlyCommercialRelationship =
     useEditorStore(
       (state) =>
-        state.selectOnlyRelationship,
+        state.selectOnlyCommercialRelationship,
     );
 
   const beginTransaction =
     useEditorStore(
-      (state) => state.beginTransaction,
+      (state) =>
+        state.beginTransaction,
     );
 
   const commitTransaction =
     useEditorStore(
-      (state) => state.commitTransaction,
+      (state) =>
+        state.commitTransaction,
     );
 
   const showNotice =
     useEditorStore(
-      (state) => state.showNotice,
+      (state) =>
+        state.showNotice,
     );
 
-  /* -------------------------------------------------------
+  /* =======================================================
      REACT FLOW
-     ------------------------------------------------------- */
+     ======================================================= */
 
   const {
     screenToFlowPosition,
   } =
-    useReactFlow<ActorFlowNode>();
+    useReactFlow<
+      ActorFlowNode,
+      CommercialRelationshipFlowEdge
+    >();
 
-  /* -------------------------------------------------------
+  /* =======================================================
      MENU DE CONTEXTO
-     ------------------------------------------------------- */
+     ======================================================= */
 
   const [
     context,
     setContext,
   ] =
-    useState<EditorContext | null>(
-      null,
-    );
+    useState<
+      EditorContext | null
+    >(null);
 
-  /* -------------------------------------------------------
-     MODEL → REACT FLOW
-     ------------------------------------------------------- */
+  /* =======================================================
+     MODELO → REACT FLOW
+     ======================================================= */
 
   const nodes =
     useMemo(
@@ -190,17 +224,16 @@ function EditorCanvasInner() {
      ======================================================= */
 
   /**
-   * O React Flow informa mudanças visuais nos nodes.
-   *
-   * Como a posição pertence ao modelo canônico,
-   * qualquer movimentação precisa ser refletida
-   * no Actor correspondente.
+   * React Flow controla a interação visual, mas a posição
+   * real pertence ao modelo canônico.
    */
   const handleNodesChange =
     useCallback(
       (
         changes:
-          NodeChange<ActorFlowNode>[],
+          NodeChange<
+            ActorFlowNode
+          >[],
       ) => {
         for (
           const change
@@ -230,21 +263,30 @@ function EditorCanvasInner() {
     );
 
   /* =======================================================
-     CONEXÕES
+     CRIAÇÃO DE RELAÇÃO COMERCIAL
      ======================================================= */
 
   /**
-   * Estrutura provisória da Sprint 1.
+   * Ao conectar dois atores pelos handles, criamos
+   * uma Relação Comercial.
    *
-   * Atualmente conectar dois handles cria um Relationship.
+   * IMPORTANTE:
    *
-   * Quando implementarmos formalmente a notação SSN,
-   * iremos distinguir:
+   * React Flow utiliza internamente source e target.
+   * Esses campos são necessários apenas para desenhar
+   * a aresta.
    *
-   * - Relação Comercial;
-   * - Fluxo;
-   * - OU Gateway;
-   * - XOU Gateway.
+   * No domínio SSN, a Relação Comercial NÃO possui direção.
+   *
+   * Portanto:
+   *
+   * A ───────── B
+   *
+   * é semanticamente equivalente a:
+   *
+   * B ───────── A
+   *
+   * A direção pertence exclusivamente aos Fluxos.
    */
   const handleConnect =
     useCallback(
@@ -259,13 +301,13 @@ function EditorCanvasInner() {
           return;
         }
 
-        addRelationship(
+        addCommercialRelationship(
           connection.source,
           connection.target,
         );
       },
       [
-        addRelationship,
+        addCommercialRelationship,
       ],
     );
 
@@ -273,6 +315,14 @@ function EditorCanvasInner() {
      SELEÇÃO
      ======================================================= */
 
+  /**
+   * Nodes selecionados representam atores.
+   *
+   * Edges selecionados representam Relações Comerciais.
+   *
+   * Fluxos são selecionados diretamente pelas caixas
+   * P.1, S.1, F.1, C.1 renderizadas no edge customizado.
+   */
   const handleSelectionChange =
     useCallback(
       ({
@@ -280,7 +330,10 @@ function EditorCanvasInner() {
           selectedNodes,
         edges:
           selectedEdges,
-      }: OnSelectionChangeParams) => {
+      }: OnSelectionChangeParams<
+        ActorFlowNode,
+        CommercialRelationshipFlowEdge
+      >) => {
         setSelection(
           selectedNodes.map(
             (node) =>
@@ -291,6 +344,10 @@ function EditorCanvasInner() {
             (edge) =>
               edge.id,
           ),
+
+          [],
+
+          [],
         );
       },
       [
@@ -310,8 +367,8 @@ function EditorCanvasInner() {
         rawType: string,
       ) => {
         /**
-         * Nunca confiamos diretamente no conteúdo
-         * recebido pelo DataTransfer.
+         * O tipo recebido pelo DataTransfer é validado
+         * antes de entrar no modelo.
          */
         if (
           !isActorType(
@@ -328,8 +385,11 @@ function EditorCanvasInner() {
 
         const position =
           screenToFlowPosition({
-            x: clientX,
-            y: clientY,
+            x:
+              clientX,
+
+            y:
+              clientY,
           });
 
         addActor(
@@ -353,21 +413,44 @@ function EditorCanvasInner() {
      ======================================================= */
 
   /**
-   * O minimapa utiliza as mesmas cores semânticas
-   * definidas pela notação SSN.
+   * O minimapa utiliza as cores semânticas definidas
+   * no catálogo SSN.
    */
   const miniMapNodeColor =
     useCallback(
       (
         node:
           ActorFlowNode,
-      ) => {
+      ): string => {
         return getActorTypeDefinition(
           node.data.type,
         ).surface;
       },
       [],
     );
+
+  /* =======================================================
+     CONTADORES
+     ======================================================= */
+
+  const actorCount =
+    model.actors.length;
+
+  const commercialRelationshipCount =
+    model
+      .commercialRelationships
+      .length;
+
+  const flowCount =
+    model.flows.length;
+
+  const selectedCount =
+    selection.actorIds.length +
+    selection
+      .commercialRelationshipIds
+      .length +
+    selection.flowIds.length +
+    selection.gatewayIds.length;
 
   /* =======================================================
      RENDER
@@ -377,13 +460,17 @@ function EditorCanvasInner() {
     <main
       className="canvas-shell"
       aria-label="Editor visual do ecossistema"
-      onDragOver={(event) => {
+      onDragOver={(
+        event,
+      ) => {
         event.preventDefault();
 
         event.dataTransfer.dropEffect =
           'copy';
       }}
-      onDrop={(event) => {
+      onDrop={(
+        event,
+      ) => {
         event.preventDefault();
 
         const actorType =
@@ -391,7 +478,9 @@ function EditorCanvasInner() {
             'application/ecos-actor',
           );
 
-        if (!actorType) {
+        if (
+          !actorType
+        ) {
           return;
         }
 
@@ -404,40 +493,67 @@ function EditorCanvasInner() {
     >
       <ReactFlow<
         ActorFlowNode,
-        Edge
+        CommercialRelationshipFlowEdge
       >
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
+        nodes={
+          nodes
+        }
+
+        edges={
+          edges
+        }
+
+        nodeTypes={
+          nodeTypes
+        }
+
+        edgeTypes={
+          edgeTypes
+        }
 
         /* -----------------------------------------------
-           ALTERAÇÕES DOS ATORES
+           MOVIMENTAÇÃO DOS ATORES
            ----------------------------------------------- */
+
         onNodesChange={
           handleNodesChange
         }
 
         /* -----------------------------------------------
-           CONEXÕES
+           CRIAÇÃO DA RELAÇÃO COMERCIAL
            ----------------------------------------------- */
+
         onConnect={
           handleConnect
         }
 
         isValidConnection={(
           connection,
-        ) =>
-          Boolean(
-            connection.source &&
-              connection.target &&
-              connection.source !==
-                connection.target,
-          )
-        }
+        ) => {
+          if (
+            !connection.source ||
+            !connection.target
+          ) {
+            return false;
+          }
+
+          /**
+           * Não permitimos relação do ator com ele mesmo.
+           *
+           * A Store continua sendo responsável pela
+           * validação definitiva, inclusive por impedir
+           * relações comerciais duplicadas.
+           */
+          return (
+            connection.source !==
+            connection.target
+          );
+        }}
 
         /* -----------------------------------------------
            SELEÇÃO
            ----------------------------------------------- */
+
         onSelectionChange={
           handleSelectionChange
         }
@@ -452,6 +568,7 @@ function EditorCanvasInner() {
         /* -----------------------------------------------
            CANVAS
            ----------------------------------------------- */
+
         onPaneClick={() => {
           clearSelection();
 
@@ -489,6 +606,7 @@ function EditorCanvasInner() {
         /* -----------------------------------------------
            MENU DO ATOR
            ----------------------------------------------- */
+
         onNodeContextMenu={(
           event,
           node,
@@ -496,11 +614,11 @@ function EditorCanvasInner() {
           event.preventDefault();
 
           /**
-           * Se o ator já faz parte de uma seleção múltipla,
-           * preservamos essa seleção.
+           * Se o ator já fizer parte de uma seleção
+           * múltipla, preservamos a seleção.
            *
            * Caso contrário, ele passa a ser o único
-           * elemento selecionado.
+           * ator selecionado.
            */
           if (
             !selection.actorIds.includes(
@@ -528,27 +646,34 @@ function EditorCanvasInner() {
         }}
 
         /* -----------------------------------------------
-           MENU DA RELAÇÃO
+           MENU DA RELAÇÃO COMERCIAL
            ----------------------------------------------- */
+
         onEdgeContextMenu={(
           event,
           edge,
         ) => {
           event.preventDefault();
 
+          /**
+           * Garante que a Relação Comercial clicada
+           * esteja selecionada antes de abrir o menu.
+           */
           if (
-            !selection.relationshipIds.includes(
-              edge.id,
-            )
+            !selection
+              .commercialRelationshipIds
+              .includes(
+                edge.id,
+              )
           ) {
-            selectOnlyRelationship(
+            selectOnlyCommercialRelationship(
               edge.id,
             );
           }
 
           setContext({
             kind:
-              'relationship',
+              'commercialRelationship',
 
             x:
               event.clientX,
@@ -556,7 +681,7 @@ function EditorCanvasInner() {
             y:
               event.clientY,
 
-            relationshipId:
+            commercialRelationshipId:
               edge.id,
           });
         }}
@@ -564,6 +689,7 @@ function EditorCanvasInner() {
         /* -----------------------------------------------
            HISTÓRICO DE MOVIMENTAÇÃO
            ----------------------------------------------- */
+
         onNodeDragStart={() => {
           beginTransaction();
 
@@ -581,17 +707,25 @@ function EditorCanvasInner() {
            ----------------------------------------------- */
 
         /**
-         * Exclusão é controlada pelo EditorToolbar /
-         * atalhos próprios da aplicação.
+         * React Flow não deve excluir nodes ou edges
+         * diretamente.
          *
-         * Isso evita que React Flow altere visualmente
-         * nodes sem atualizar o modelo canônico.
+         * Toda exclusão é realizada pela Store para
+         * preservar:
+         *
+         * - modelo canônico;
+         * - exclusões em cascata;
+         * - Undo/Redo;
+         * - Fluxos associados às relações.
          */
-        deleteKeyCode={null}
+        deleteKeyCode={
+          null
+        }
 
         /* -----------------------------------------------
            VIEWPORT
            ----------------------------------------------- */
+
         fitView
 
         fitViewOptions={{
@@ -611,8 +745,9 @@ function EditorCanvasInner() {
         }
 
         /* -----------------------------------------------
-           EXPERIÊNCIA DE USO
+           INTERAÇÃO
            ----------------------------------------------- */
+
         nodesDraggable
 
         nodesConnectable
@@ -637,8 +772,12 @@ function EditorCanvasInner() {
           variant={
             BackgroundVariant.Dots
           }
-          gap={24}
-          size={1}
+          gap={
+            24
+          }
+          size={
+            1
+          }
           color="#d8dee7"
         />
 
@@ -646,15 +785,19 @@ function EditorCanvasInner() {
             MINIMAPA
             ================================================= */}
 
-        <MiniMap
+        <MiniMap<ActorFlowNode>
           pannable
           zoomable
-          nodeBorderRadius={0}
+          nodeBorderRadius={
+            0
+          }
           nodeColor={
             miniMapNodeColor
           }
           nodeStrokeColor="#111827"
-          nodeStrokeWidth={1}
+          nodeStrokeWidth={
+            1
+          }
           maskColor="rgba(241, 245, 249, 0.72)"
         />
 
@@ -664,7 +807,9 @@ function EditorCanvasInner() {
 
         <Controls
           position="bottom-left"
-          showInteractive={false}
+          showInteractive={
+            false
+          }
         />
       </ReactFlow>
 
@@ -683,13 +828,13 @@ function EditorCanvasInner() {
         <i />
 
         <span>
-          Conecte pelos pontos laterais
+          Conecte dois atores para criar uma Relação Comercial
         </span>
 
         <i />
 
         <span>
-          Botão direito abre o menu
+          Selecione a relação para adicionar Fluxos
         </span>
       </div>
 
@@ -702,8 +847,8 @@ function EditorCanvasInner() {
         aria-live="polite"
       >
         <span>
-          {model.actors.length}{' '}
-          {model.actors.length === 1
+          {actorCount}{' '}
+          {actorCount === 1
             ? 'ator'
             : 'atores'}
         </span>
@@ -711,21 +856,27 @@ function EditorCanvasInner() {
         <i />
 
         <span>
-          {model.relationships.length}{' '}
-          {model.relationships.length === 1
-            ? 'relação'
-            : 'relações'}
+          {commercialRelationshipCount}{' '}
+          {commercialRelationshipCount === 1
+            ? 'relação comercial'
+            : 'relações comerciais'}
         </span>
 
         <i />
 
         <span>
-          {selection.actorIds.length +
-            selection.relationshipIds.length}{' '}
+          {flowCount}{' '}
+          {flowCount === 1
+            ? 'fluxo'
+            : 'fluxos'}
+        </span>
+
+        <i />
+
+        <span>
+          {selectedCount}{' '}
           selecionado
-          {selection.actorIds.length +
-            selection.relationshipIds.length ===
-          1
+          {selectedCount === 1
             ? ''
             : 's'}
         </span>
@@ -740,11 +891,11 @@ function EditorCanvasInner() {
           context={
             context
           }
-          onClose={() =>
+          onClose={() => {
             setContext(
               null,
-            )
-          }
+            );
+          }}
         />
       ) : null}
     </main>

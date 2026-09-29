@@ -29,6 +29,10 @@
   --danger-color: #dc2626;
 }
 
+/* =========================================================
+   RESET
+   ========================================================= */
+
 * {
   box-sizing: border-box;
 }
@@ -37,6 +41,7 @@ html,
 body,
 #root {
   margin: 0;
+
   width: 100%;
   height: 100%;
 }
@@ -62,6 +67,7 @@ button:disabled {
 
 kbd {
   display: inline-flex;
+
   align-items: center;
   justify-content: center;
 
@@ -74,6 +80,7 @@ kbd {
   border-radius: 5px;
 
   background: #f8fafc;
+
   color: #536174;
 
   font-size: 9px;
@@ -87,10 +94,14 @@ kbd {
 
 .app-shell {
   height: 100vh;
+
   min-width: 1060px;
 
   display: grid;
-  grid-template-rows: 64px 1fr;
+
+  grid-template-rows:
+    64px
+    1fr;
 
   overflow: hidden;
 
@@ -117,22 +128,28 @@ kbd {
 
   background: #ffffff;
 
-  border-bottom: 1px solid var(--border-default);
+  border-bottom:
+    1px solid
+    var(--border-default);
 
   box-shadow:
-    0 1px 0 rgba(15, 23, 42, 0.02);
+    0 1px 0
+    rgba(15, 23, 42, 0.02);
 
   z-index: 30;
 }
 
 .brand {
   display: flex;
+
   align-items: center;
+
   gap: 11px;
 }
 
 .brand__mark {
   display: grid;
+
   place-items: center;
 
   width: 35px;
@@ -152,7 +169,8 @@ kbd {
   font-weight: 850;
 
   box-shadow:
-    0 4px 12px rgba(18, 57, 91, 0.18);
+    0 4px 12px
+    rgba(18, 57, 91, 0.18);
 }
 
 .brand strong {
@@ -173,10 +191,15 @@ kbd {
   color: #7a8798;
 }
 
+/* =========================================================
+   MODEL TITLE
+   ========================================================= */
+
 .model-title {
   justify-self: center;
 
   display: flex;
+
   align-items: center;
 
   gap: 8px;
@@ -191,11 +214,17 @@ kbd {
 }
 
 .model-title input {
-  width: min(360px, 31vw);
+  width:
+    min(
+      360px,
+      31vw
+    );
 
   padding: 8px 10px;
 
-  border: 1px solid transparent;
+  border:
+    1px solid transparent;
+
   border-radius: 8px;
 
   background: transparent;
@@ -216,6 +245,10 @@ kbd {
   background: #f8fafc;
 }
 
+/* =========================================================
+   TOOLBAR ACTIONS
+   ========================================================= */
+
 .toolbar__actions {
   display: flex;
 
@@ -226,6 +259,7 @@ kbd {
 
 .toolbar__actions button {
   height: 34px;
+
   min-width: 34px;
 
   display: inline-flex;
@@ -237,10 +271,12 @@ kbd {
 
   padding: 0 9px;
 
-  border: 1px solid #dce3ec;
+  border:
+    1px solid #dce3ec;
+
   border-radius: 8px;
 
-  background: #fff;
+  background: #ffffff;
 
   color: #4b5b70;
 }
@@ -264,15 +300,15 @@ kbd {
 
   border-color: #12395b;
 
-  color: white;
+  color: #ffffff;
 }
 
 .toolbar__actions .button-primary:hover:not(:disabled) {
   background: #0e2f4c;
 
-  color: #fff;
-
   border-color: #0e2f4c;
+
+  color: #ffffff;
 }
 
 .toolbar__divider {
@@ -300,7 +336,7 @@ kbd {
 }
 
 .panel {
-  background: white;
+  background: #ffffff;
 
   z-index: 10;
 
@@ -308,16 +344,30 @@ kbd {
 }
 
 .palette {
-  padding: 20px 14px 26px;
+  padding:
+    20px
+    14px
+    26px;
 
-  border-right: 1px solid var(--border-default);
+  border-right:
+    1px solid
+    var(--border-default);
 }
 
 .properties-panel {
-  padding: 20px 18px 26px;
+  padding:
+    20px
+    18px
+    26px;
 
-  border-left: 1px solid var(--border-default);
+  border-left:
+    1px solid
+    var(--border-default);
 }
+
+/* =========================================================
+   PANEL HEADER
+   ========================================================= */
 
 .panel__heading {
   display: flex;
@@ -329,7 +379,10 @@ kbd {
 }
 
 .panel__heading h2 {
-  margin: 2px 0 0;
+  margin:
+    2px
+    0
+    0;
 
   font-size: 16px;
 
@@ -349,9 +402,13 @@ kbd {
 }
 
 .panel__hint {
-  margin: 0 0 18px;
+  margin:
+    0
+    0
+    18px;
 
   font-size: 11px;
+
   line-height: 1.55;
 
   color: #748196;
@@ -369,6 +426,7 @@ kbd {
   display: flex;
 
   justify-content: space-between;
+
   align-items: center;
 
   gap: 10px;
@@ -385,7 +443,9 @@ kbd {
 }
 
 .palette-group__heading span {
-  padding: 3px 6px;
+  padding:
+    3px
+    6px;
 
   border-radius: 999px;
 
@@ -399,11 +459,15 @@ kbd {
 }
 
 .palette-group > p {
-  margin: 0 0 10px;
+  margin:
+    0
+    0
+    10px;
 
   color: #8995a4;
 
   font-size: 9.5px;
+
   line-height: 1.45;
 }
 
@@ -415,11 +479,20 @@ kbd {
   gap: 7px;
 }
 
+/* =========================================================
+   PALETTE ACTOR
+   ========================================================= */
+
 .palette-actor {
   width: 100%;
+
   min-height: 64px;
 
-  padding: 8px 8px 8px 6px;
+  padding:
+    8px
+    8px
+    8px
+    6px;
 
   display: grid;
 
@@ -437,9 +510,11 @@ kbd {
 
   color: #263449;
 
-  background: #fff;
+  background: #ffffff;
 
-  border: 1px solid #dce3ec;
+  border:
+    1px solid #dce3ec;
+
   border-radius: 9px;
 
   transition:
@@ -453,9 +528,11 @@ kbd {
   border-color: #a9bdcf;
 
   box-shadow:
-    0 5px 18px rgba(24, 52, 78, 0.07);
+    0 5px 18px
+    rgba(24, 52, 78, 0.07);
 
-  transform: translateY(-1px);
+  transform:
+    translateY(-1px);
 }
 
 .palette-actor:disabled {
@@ -501,6 +578,7 @@ kbd {
   display: -webkit-box;
 
   -webkit-line-clamp: 2;
+
   -webkit-box-orient: vertical;
 
   overflow: hidden;
@@ -508,13 +586,18 @@ kbd {
 
 .palette__section {
   margin-top: 26px;
+
   padding-top: 16px;
 
-  border-top: 1px solid #edf0f4;
+  border-top:
+    1px solid #edf0f4;
 }
 
 .palette-shortcut-hint {
-  margin: 8px 0 0;
+  margin:
+    8px
+    0
+    0;
 
   color: #7b8898;
 
@@ -527,11 +610,11 @@ kbd {
    FORMAS SSN
    ========================================================= */
 
-/*
- * As cores são fornecidas pelo catálogo SSN.
+/**
+ * As cores dos atores são determinadas semanticamente
+ * pelo catálogo SSN.
  *
- * A borda, entretanto, permanece preta em todos os atores,
- * conforme a representação formal da notação.
+ * Todos os atores possuem borda preta sólida.
  */
 
 .actor-shape {
@@ -544,15 +627,13 @@ kbd {
   width: 220px;
   height: 76px;
 
-  color: var(--actor-text);
+  color:
+    var(--actor-text);
 
-  /*
-   * Sombra propositalmente discreta.
-   * A forma SSN continua sendo o elemento visual dominante.
-   */
   filter:
     drop-shadow(
-      0 3px 5px rgba(15, 23, 42, 0.10)
+      0 3px 5px
+      rgba(15, 23, 42, 0.10)
     );
 }
 
@@ -576,11 +657,9 @@ kbd {
 
 .actor-shape__svg rect,
 .actor-shape__svg polygon {
-  fill: var(--actor-surface);
+  fill:
+    var(--actor-surface);
 
-  /*
-   * A definição formal utiliza borda sólida.
-   */
   stroke: #111827;
 
   stroke-width: 1.7;
@@ -590,33 +669,39 @@ kbd {
     stroke-width 0.14s ease;
 }
 
-/*
- * Seleção não modifica a semântica visual da SSN.
- *
- * Em vez de trocar a cor ou o preenchimento da forma,
- * adicionamos apenas um halo externo.
- */
+/* =========================================================
+   SELEÇÃO DO ATOR
+   ========================================================= */
+
 .actor-shape--selected {
   filter:
     drop-shadow(
-      0 0 0 var(--selection-ring)
+      0 0 4px
+      rgba(37, 99, 235, 0.38)
     )
     drop-shadow(
-      0 4px 7px rgba(15, 23, 42, 0.12)
+      0 4px 7px
+      rgba(15, 23, 42, 0.12)
     );
 }
 
-.actor-shape--selected .actor-shape__svg rect,
-.actor-shape--selected .actor-shape__svg polygon {
+.actor-shape--selected
+.actor-shape__svg rect,
+.actor-shape--selected
+.actor-shape__svg polygon {
   stroke-width: 2.5;
 }
 
-/*
- * Elemento semanticamente inválido.
- */
-.actor-shape--invalid .actor-shape__svg rect,
-.actor-shape--invalid .actor-shape__svg polygon {
-  stroke: var(--danger-color);
+/* =========================================================
+   ATOR INVÁLIDO
+   ========================================================= */
+
+.actor-shape--invalid
+.actor-shape__svg rect,
+.actor-shape--invalid
+.actor-shape__svg polygon {
+  stroke:
+    var(--danger-color);
 
   stroke-width: 2.5;
 }
@@ -635,114 +720,103 @@ kbd {
   align-items: center;
   justify-content: center;
 
-  padding: 10px 28px;
+  padding:
+    10px
+    28px;
 
   pointer-events: none;
 
-  color: var(--actor-text);
+  color:
+    var(--actor-text);
 }
 
-/*
- * Ajustes específicos das formas.
- *
- * Esses paddings evitam que o texto entre nas pontas
- * geométricas de Fornecedor, Cliente etc.
- */
+/* =========================================================
+   AJUSTES POR FORMA
+   ========================================================= */
 
 .actor-shape--shape-arrow-right
 .actor-shape__content {
   padding-left: 20px;
+
   padding-right: 48px;
 }
 
 .actor-shape--shape-arrow-left
 .actor-shape__content {
   padding-left: 48px;
+
   padding-right: 20px;
 }
 
 .actor-shape--shape-hexagon
 .actor-shape__content {
   padding-left: 42px;
+
   padding-right: 42px;
 }
 
 .actor-shape--shape-notched-right
 .actor-shape__content {
   padding-left: 20px;
+
   padding-right: 46px;
 }
 
 .actor-shape--shape-parallelogram
 .actor-shape__content {
   padding-left: 44px;
+
   padding-right: 44px;
 }
 
 .actor-shape--compact
 .actor-shape__content {
-  padding: 3px 8px;
+  padding:
+    3px
+    8px;
 }
 
 /* =========================================================
-   IDENTIDADE VISUAL FORMAL DOS ATORES SSN
+   IDENTIDADE VISUAL DOS ATORES SSN
    ========================================================= */
 
-/*
- * Companhia de Interesse
- *
- * Retângulo azul.
- */
+/* Companhia de Interesse */
+
 .actor-shape--company_of_interest {
   --actor-surface: #123cff;
   --actor-text: #ffffff;
 }
 
-/*
- * Fornecedor
- *
- * Seta laranja apontando para direita.
- */
+/* Fornecedor */
+
 .actor-shape--supplier {
   --actor-surface: #ffa412;
   --actor-text: #111111;
 }
 
-/*
- * Cliente
- *
- * Seta amarela apontando para esquerda.
- */
+/* Cliente */
+
 .actor-shape--customer {
   --actor-surface: #fff200;
   --actor-text: #111111;
 }
 
-/*
- * Intermediário
- *
- * Hexágono verde.
- */
+/* Intermediário */
+
 .actor-shape--intermediary {
   --actor-surface: #32cc32;
   --actor-text: #111111;
 }
 
-/*
- * Cliente do Cliente
- *
- * Forma cinza com recorte lateral.
- */
+/* Cliente do Cliente */
+
 .actor-shape--customer_of_customer {
   --actor-surface: #d3d3d3;
   --actor-text: #111111;
 }
 
-/*
- * Agregador
- *
- * Paralelogramo vermelho.
- */
+/* Agregador */
+
 .actor-shape--aggregator {
   --actor-surface: #ff1b1b;
   --actor-text: #111111;
@@ -769,37 +843,34 @@ kbd {
   line-height: 1.1;
 }
 
-.actor-node__type {
-  display: block;
-
-  margin-bottom: 5px;
-
-  font-size: 8px;
-
-  font-weight: 850;
-
-  text-transform: uppercase;
-
-  letter-spacing: 0.07em;
-
-  opacity: 0.72;
-}
+/**
+ * O tipo do ator NÃO é exibido dentro da forma.
+ *
+ * Somente o nome concreto do ator aparece no canvas.
+ */
 
 .actor-node__content strong {
   display: block;
 
   max-width: 160px;
 
-  margin: 0 auto;
+  margin:
+    0
+    auto;
 
   overflow: hidden;
 
   text-overflow: ellipsis;
+
   white-space: nowrap;
 
   font-size: 12px;
 
   font-weight: 800;
+}
+
+.actor-node__name {
+  display: block;
 }
 
 .actor-node__warning {
@@ -822,7 +893,8 @@ kbd {
   color: #dc2626;
 
   box-shadow:
-    0 2px 7px rgba(127, 29, 29, 0.18);
+    0 2px 7px
+    rgba(127, 29, 29, 0.18);
 
   z-index: 8;
 }
@@ -835,7 +907,8 @@ kbd {
   width: 10px;
   height: 10px;
 
-  border: 2px solid #ffffff;
+  border:
+    2px solid #ffffff;
 
   background: #111827;
 
@@ -848,25 +921,24 @@ kbd {
   z-index: 6;
 }
 
-/*
- * Handles aparecem somente quando o usuário realmente
- * interage com o ator.
- */
 .actor-node:hover
 .actor-node__handle.react-flow__handle,
 .react-flow__node.selected
 .actor-node__handle.react-flow__handle {
   opacity: 0.88;
 
-  transform: scale(1.12);
+  transform:
+    scale(1.12);
 }
 
 .actor-node__handle--target {
-  left: -3px !important;
+  left:
+    -3px !important;
 }
 
 .actor-node__handle--source {
-  right: -3px !important;
+  right:
+    -3px !important;
 }
 
 /* =========================================================
@@ -879,31 +951,40 @@ kbd {
   min-width: 0;
   min-height: 0;
 
-  background: var(--canvas-background);
+  background:
+    var(--canvas-background);
 }
 
-.canvas-shell .react-flow__background {
-  background: var(--canvas-background);
+.canvas-shell
+.react-flow__background {
+  background:
+    var(--canvas-background);
 }
 
-.canvas-shell .react-flow__minimap {
-  border: 1px solid #dce4ed;
+.canvas-shell
+.react-flow__minimap {
+  border:
+    1px solid #dce4ed;
 
   border-radius: 9px;
 
   overflow: hidden;
 
   box-shadow:
-    0 6px 20px rgba(30, 50, 70, 0.08);
+    0 6px 20px
+    rgba(30, 50, 70, 0.08);
 
-  background: white;
+  background: #ffffff;
 }
 
-.canvas-shell .react-flow__controls {
-  border: 1px solid #dce4ed;
+.canvas-shell
+.react-flow__controls {
+  border:
+    1px solid #dce4ed;
 
   box-shadow:
-    0 6px 20px rgba(30, 50, 70, 0.08);
+    0 6px 20px
+    rgba(30, 50, 70, 0.08);
 
   border-radius: 9px;
 
@@ -932,14 +1013,153 @@ kbd {
   cursor: grabbing;
 }
 
-.react-flow__edge.selected path {
-  stroke: #2563eb !important;
+/* =========================================================
+   RELAÇÃO COMERCIAL — EDGE
+   ========================================================= */
 
-  stroke-width: 2.8 !important;
+/**
+ * Somente o path real gerado pelo BaseEdge recebe
+ * estilização.
+ *
+ * Isso evita alterar o path transparente utilizado
+ * apenas para aumentar a área clicável.
+ */
+
+.react-flow__edge
+.react-flow__edge-path {
+  stroke: #111827;
+
+  stroke-width: 1.7;
 }
 
-.react-flow__edge:hover path {
-  stroke: #334155;
+.react-flow__edge:hover
+.react-flow__edge-path {
+  stroke: #111827;
+
+  stroke-width: 2.1;
+}
+
+.react-flow__edge.selected
+.react-flow__edge-path {
+  stroke:
+    var(--selection-color);
+
+  stroke-width: 2.5;
+}
+
+/* =========================================================
+   ÁREA DE INTERAÇÃO DA RELAÇÃO COMERCIAL
+   ========================================================= */
+
+.commercial-relationship-edge__interaction {
+  fill: none;
+
+  stroke:
+    transparent !important;
+
+  pointer-events: stroke;
+
+  cursor: pointer;
+}
+
+/* =========================================================
+   FLUXOS SOBRE A RELAÇÃO COMERCIAL
+   ========================================================= */
+
+/**
+ * Todos os Fluxos ocupam inicialmente a mesma célula.
+ *
+ * O componente aplica translateY individualmente.
+ *
+ * Dessa forma:
+ *
+ *        [ P.1 ]
+ * ────── [ S.1 ] ──────
+ *        [ F.1 ]
+ *
+ * permanece centralizado sobre a Relação Comercial.
+ */
+
+.commercial-relationship-edge__flows {
+  display: grid;
+
+  place-items: center;
+
+  z-index: 20;
+
+  pointer-events: all;
+}
+
+.commercial-relationship-edge__flow {
+  grid-area:
+    1
+    /
+    1;
+
+  min-width: 38px;
+
+  height: 24px;
+
+  padding:
+    0
+    7px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border:
+    1.5px solid #111827;
+
+  border-radius: 2px;
+
+  background: #ffffff;
+
+  color: #111827;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  line-height: 1;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 1px 3px
+    rgba(15, 23, 42, 0.12);
+
+  transition:
+    border-color 0.14s ease,
+    box-shadow 0.14s ease,
+    background 0.14s ease;
+}
+
+.commercial-relationship-edge__flow:hover {
+  background: #f8fafc;
+
+  border-color:
+    var(--selection-color);
+
+  box-shadow:
+    0 2px 6px
+    rgba(37, 99, 235, 0.18);
+}
+
+.commercial-relationship-edge__flow--selected {
+  border-color:
+    var(--selection-color);
+
+  outline:
+    2px solid
+    rgba(37, 99, 235, 0.16);
+
+  background: #ffffff;
+
+  color: #1d4ed8;
 }
 
 /* =========================================================
@@ -958,7 +1178,9 @@ kbd {
 
   align-items: center;
 
-  padding: 6px 10px;
+  padding:
+    6px
+    10px;
 
   border:
     1px solid #dfe5ed;
@@ -969,27 +1191,31 @@ kbd {
     rgba(255, 255, 255, 0.93);
 
   box-shadow:
-    0 6px 22px rgba(25, 45, 65, 0.06);
+    0 6px 22px
+    rgba(25, 45, 65, 0.06);
 
   color: #768498;
 
   font-size: 9px;
 
-  backdrop-filter: blur(6px);
+  backdrop-filter:
+    blur(6px);
 }
 
 .canvas-help {
   left: 50%;
   top: 14px;
 
-  transform: translateX(-50%);
+  transform:
+    translateX(-50%);
 }
 
 .canvas-status {
   left: 50%;
   bottom: 14px;
 
-  transform: translateX(-50%);
+  transform:
+    translateX(-50%);
 }
 
 .canvas-help i,
@@ -1019,7 +1245,9 @@ kbd {
 .properties-badge {
   align-self: flex-start;
 
-  padding: 5px 8px;
+  padding:
+    5px
+    8px;
 
   border-radius: 999px;
 
@@ -1035,6 +1263,10 @@ kbd {
 
   letter-spacing: 0.07em;
 }
+
+/* =========================================================
+   ACTOR PREVIEW
+   ========================================================= */
 
 .actor-preview {
   display: flex;
@@ -1055,7 +1287,10 @@ kbd {
 
 .actor-preview
 .actor-shape {
-  flex: 0 0 auto;
+  flex:
+    0
+    0
+    auto;
 }
 
 .actor-preview strong {
@@ -1067,6 +1302,10 @@ kbd {
 
   color: #314155;
 }
+
+/* =========================================================
+   FORM FIELDS
+   ========================================================= */
 
 .form-stack label {
   display: flex;
@@ -1087,7 +1326,9 @@ kbd {
 .form-stack textarea {
   width: 100%;
 
-  padding: 9px 10px;
+  padding:
+    9px
+    10px;
 
   border:
     1px solid #d9e1ea;
@@ -1101,7 +1342,9 @@ kbd {
   font-size: 11.5px;
 
   font-weight: 450;
+}
 
+.form-stack textarea {
   resize: vertical;
 }
 
@@ -1109,7 +1352,8 @@ kbd {
 .form-stack select:focus,
 .form-stack textarea:focus {
   outline:
-    2px solid rgba(42, 113, 163, 0.13);
+    2px solid
+    rgba(42, 113, 163, 0.13);
 
   border-color: #7da6c4;
 }
@@ -1142,13 +1386,104 @@ kbd {
 }
 
 /* =========================================================
+   FORM BUTTONS
+   ========================================================= */
+
+.form-stack
+button:not(
+  .danger-button
+):not(
+  .relationship-flow-item
+) {
+  min-height: 34px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  padding:
+    7px
+    10px;
+
+  border:
+    1px solid #d7e0e9;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #405269;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
+.form-stack
+button:not(
+  .danger-button
+):not(
+  .relationship-flow-item
+):hover {
+  background: #f3f6f9;
+
+  border-color: #bdcad7;
+}
+
+/* =========================================================
+   DEFINIÇÃO SSN / BLOCO INFORMATIVO
+   ========================================================= */
+
+.actor-definition {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 9px;
+
+  padding: 11px;
+
+  border:
+    1px solid #e1e7ee;
+
+  border-radius: 9px;
+
+  background: #f9fbfd;
+}
+
+.actor-definition > p {
+  margin: 0;
+
+  color: #647287;
+
+  font-size: 10px;
+
+  line-height: 1.5;
+
+  font-weight: 450;
+}
+
+.actor-definition > small {
+  color: #8a96a5;
+
+  font-size: 9px;
+
+  line-height: 1.4;
+}
+
+/* =========================================================
    EMPTY PROPERTIES
    ========================================================= */
 
 .empty-properties {
   margin-top: 90px;
 
-  padding: 0 20px;
+  padding:
+    0
+    20px;
 
   text-align: center;
 
@@ -1157,7 +1492,9 @@ kbd {
 
 .empty-properties__icon {
   margin:
-    0 auto 13px;
+    0
+    auto
+    13px;
 
   display: grid;
 
@@ -1215,7 +1552,10 @@ kbd {
 }
 
 .multi-properties > p {
-  margin: 5px 0 12px;
+  margin:
+    5px
+    0
+    12px;
 
   color: #7c8999;
 
@@ -1236,7 +1576,7 @@ kbd {
 
   border-radius: 8px;
 
-  background: white;
+  background: #ffffff;
 
   color: #46586e;
 
@@ -1257,7 +1597,7 @@ kbd {
 }
 
 /* =========================================================
-   RELATIONSHIP SUMMARY
+   RELAÇÃO COMERCIAL — RESUMO
    ========================================================= */
 
 .relationship-summary {
@@ -1306,6 +1646,7 @@ kbd {
   overflow: hidden;
 
   text-overflow: ellipsis;
+
   white-space: nowrap;
 
   font-size: 10px;
@@ -1316,9 +1657,106 @@ kbd {
 .relationship-summary__arrow {
   text-align: center;
 
-  font-size: 15px !important;
+  font-size:
+    15px !important;
 
-  color: #718096 !important;
+  color:
+    #718096 !important;
+}
+
+/* =========================================================
+   LISTA DE FLUXOS
+   ========================================================= */
+
+.relationship-flows {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.relationship-flow-item {
+  width: 100%;
+
+  min-height: 38px;
+
+  display: grid;
+
+  grid-template-columns:
+    42px
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 9px;
+
+  padding:
+    6px
+    8px;
+
+  border:
+    1px solid #dce3eb;
+
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease;
+}
+
+.relationship-flow-item:hover {
+  background: #f5f8fb;
+
+  border-color: #b8c8d8;
+}
+
+.relationship-flow-item strong {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-width: 36px;
+
+  height: 23px;
+
+  padding:
+    0
+    5px;
+
+  border:
+    1px solid #111827;
+
+  border-radius: 2px;
+
+  background: #ffffff;
+
+  color: #111827;
+
+  font-size: 9px;
+
+  font-weight: 850;
+}
+
+.relationship-flow-item span {
+  min-width: 0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+  color: #607086;
+
+  font-size: 9.5px;
 }
 
 /* =========================================================
@@ -1343,7 +1781,7 @@ kbd {
 
   border-radius: 8px;
 
-  background: #fff;
+  background: #ffffff;
 
   color: #a33e45;
 
@@ -1381,17 +1819,26 @@ kbd {
   border-radius: 11px;
 
   background:
-    rgba(255, 255, 255, 0.98);
+    rgba(
+      255,
+      255,
+      255,
+      0.98
+    );
 
   box-shadow:
-    0 16px 42px rgba(15, 23, 42, 0.18);
+    0 16px 42px
+    rgba(15, 23, 42, 0.18);
 
-  backdrop-filter: blur(10px);
+  backdrop-filter:
+    blur(10px);
 }
 
 .context-menu__title {
   padding:
-    7px 8px 8px;
+    7px
+    8px
+    8px;
 
   color: #8a96a6;
 
@@ -1404,12 +1851,27 @@ kbd {
   letter-spacing: 0.08em;
 }
 
+.context-menu__hint {
+  padding:
+    4px
+    8px
+    8px;
+
+  color: #7b8797;
+
+  font-size: 9px;
+
+  line-height: 1.45;
+}
+
 .context-menu button {
   width: 100%;
 
   min-height: 33px;
 
-  padding: 6px 8px;
+  padding:
+    6px
+    8px;
 
   border: 0;
 
@@ -1453,13 +1915,16 @@ kbd {
 .context-menu__separator {
   height: 1px;
 
-  margin: 6px 4px;
+  margin:
+    6px
+    4px;
 
   background: #edf1f5;
 }
 
 .context-menu__danger {
-  color: #b33d47 !important;
+  color:
+    #b33d47 !important;
 }
 
 /* =========================================================
@@ -1475,6 +1940,7 @@ kbd {
   z-index: 120;
 
   min-width: 260px;
+
   max-width: 420px;
 
   display: flex;
@@ -1483,24 +1949,68 @@ kbd {
 
   gap: 9px;
 
-  padding: 11px 13px;
+  padding:
+    11px
+    13px;
 
   border:
     1px solid #dbe3eb;
 
   border-radius: 10px;
 
-  background: white;
+  background: #ffffff;
 
   box-shadow:
-    0 14px 36px rgba(15, 23, 42, 0.15);
+    0 14px 36px
+    rgba(15, 23, 42, 0.15);
 
   font-size: 10.5px;
 
   font-weight: 650;
 
   animation:
-    notice-in 0.16s ease-out;
+    notice-in
+    0.16s
+    ease-out;
+}
+
+.editor-notice__message {
+  flex: 1;
+
+  line-height: 1.45;
+}
+
+.editor-notice__close {
+  flex:
+    0
+    0
+    auto;
+
+  width: 26px;
+  height: 26px;
+
+  display: grid;
+
+  place-items: center;
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 6px;
+
+  background: transparent;
+
+  color: currentColor;
+
+  opacity: 0.58;
+}
+
+.editor-notice__close:hover {
+  background:
+    rgba(15, 23, 42, 0.06);
+
+  opacity: 1;
 }
 
 .editor-notice--success {
@@ -1531,6 +2041,10 @@ kbd {
   color: #285774;
 }
 
+/* =========================================================
+   NOTICE ANIMATION
+   ========================================================= */
+
 @keyframes notice-in {
   from {
     opacity: 0;
@@ -1551,7 +2065,9 @@ kbd {
    RESPONSIVIDADE
    ========================================================= */
 
-@media (max-width: 1260px) {
+@media (
+  max-width: 1260px
+) {
   .editor-layout {
     grid-template-columns:
       252px
@@ -1581,36 +2097,4 @@ kbd {
   .actor-shape--compact {
     width: 55px;
   }
-}
-
-.editor-notice__message {
-  flex: 1;
-  line-height: 1.45;
-}
-
-.editor-notice__close {
-  flex: 0 0 auto;
-
-  width: 26px;
-  height: 26px;
-
-  display: grid;
-  place-items: center;
-
-  padding: 0;
-
-  border: 0;
-  border-radius: 6px;
-
-  background: transparent;
-
-  color: currentColor;
-
-  opacity: 0.58;
-}
-
-.editor-notice__close:hover {
-  background: rgba(15, 23, 42, 0.06);
-
-  opacity: 1;
 }

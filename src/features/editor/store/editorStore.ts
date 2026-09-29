@@ -2,25 +2,37 @@ import { create } from 'zustand';
 
 import {
   isActorType,
+  isFlowType,
+  isGatewayType,
 } from '../../../domain/catalogs';
 
 import {
   createActor,
+  createCommercialRelationship,
   createEmptyModel,
-  createRelationship,
+  createFlow,
+  nextFlowIdentifier,
 } from '../../../domain/factory';
 
-import type {
-  Actor,
-  ActorType,
-  EcosystemModel,
-  EditorNotice,
-  EditorSelection,
-  Position,
-  Relationship,
+import {
+  MODEL_SCHEMA_VERSION,
+  type Actor,
+  type ActorType,
+  type CommercialRelationship,
+  type EcosystemModel,
+  type EditorNotice,
+  type EditorSelection,
+  type Flow,
+  type FlowType,
+  type Gateway,
+  type Position,
 } from '../../../domain/model';
 
 import {
+  actorExists,
+  commercialRelationshipExistsBetween,
+  flowMatchesCommercialRelationship,
+  isValidFlowIdentifier,
   uniqueActorName,
   validateCompanyOfInterest,
 } from '../../../domain/validation';
@@ -36,62 +48,116 @@ const HISTORY_LIMIT = 100;
 
 const EMPTY_SELECTION: EditorSelection = {
   actorIds: [],
-  relationshipIds: [],
+  commercialRelationshipIds: [],
+  flowIds: [],
+  gatewayIds: [],
 };
 
 /* =========================================================
    CLIPBOARD
    ========================================================= */
 
+/**
+ * Ao copiar atores, preservamos também:
+ *
+ * - Relações Comerciais internas à seleção;
+ * - Fluxos pertencentes a essas relações.
+ *
+ * Gateways ainda não são copiados nesta etapa.
+ */
 interface ActorClipboard {
   actors: Actor[];
-  relationships: Relationship[];
+
+  commercialRelationships: CommercialRelationship[];
+
+  flows: Flow[];
+
   origin: Position;
+
   pasteCount: number;
 }
 
 interface PasteResult {
   model: EcosystemModel;
+
   actorIds: string[];
-  relationshipIds: string[];
+
+  commercialRelationshipIds: string[];
+
+  flowIds: string[];
+
   skippedCompanyOfInterest: boolean;
 }
 
 /* =========================================================
-   HELPERS
+   MODELO LEGADO DA SPRINT ANTERIOR
    ========================================================= */
 
 /**
- * Cria uma cópia independente do modelo.
+ * Estrutura utilizada antes da separação entre:
  *
- * structuredClone é suportado pelos navegadores modernos
- * definidos como alvo da ECOS Modeling 4.0.
+ * Relação Comercial
+ * e
+ * Fluxo.
+ *
+ * Ela existe apenas para permitir migração do
+ * localStorage durante esta fase de desenvolvimento.
  */
+interface LegacyRelationship {
+  id: string;
+
+  sourceActorId: string;
+
+  targetActorId: string;
+
+  type:
+    | 'product'
+    | 'service'
+    | 'financial'
+    | 'information';
+
+  name: string;
+
+  description: string;
+}
+
+interface LegacyModel {
+  schemaVersion: '4.0-draft';
+
+  id: string;
+
+  name: string;
+
+  description: string;
+
+  actors: Actor[];
+
+  relationships: LegacyRelationship[];
+
+  updatedAt: string;
+}
+
+/* =========================================================
+   HELPERS GERAIS
+   ========================================================= */
+
 function cloneModel(
   model: EcosystemModel,
 ): EcosystemModel {
   return structuredClone(model);
 }
 
-/**
- * Atualiza a data de modificação do modelo.
- */
 function touch(
   model: EcosystemModel,
 ): EcosystemModel {
   return {
     ...model,
+
     updatedAt:
       new Date().toISOString(),
   };
 }
 
-/**
- * Compara o conteúdo de dois modelos ignorando
- * apenas o campo updatedAt.
- *
- * Isso evita criar entradas inúteis no histórico.
- */
 function sameModel(
   a: EcosystemModel,
   b: EcosystemModel,
@@ -112,9 +178,6 @@ function sameModel(
   );
 }
 
-/**
- * Remove IDs repetidos preservando a ordem.
- */
 function unique(
   values: string[],
 ): string[] {
@@ -123,52 +186,117 @@ function unique(
   ];
 }
 
-/**
- * Verifica se já existe uma Companhia de Interesse.
- *
- * ignoredActorId é utilizado durante a edição do próprio
- * ator, permitindo que uma CoI continue sendo CoI sem
- * conflitar consigo mesma.
- */
+/* =========================================================
+   COMPANHIA DE INTERESSE
+   ========================================================= */
+
 function hasCompanyOfInterest(
   model: EcosystemModel,
   ignoredActorId?: string,
 ): boolean {
   return model.actors.some(
     (actor) =>
-      actor.id !==
-        ignoredActorId &&
+      actor.id !== ignoredActorId &&
       actor.type ===
         'company_of_interest',
   );
 }
 
-/**
- * Verifica se um ator realmente existe no modelo.
- */
-function actorExists(
+/* =========================================================
+   RELAÇÃO COMERCIAL
+   ========================================================= */
+
+function commercialRelationshipExists(
   model: EcosystemModel,
-  actorId: string,
+  relationshipId: string,
 ): boolean {
-  return model.actors.some(
-    (actor) =>
-      actor.id === actorId,
+  return model.commercialRelationships.some(
+    (relationship) =>
+      relationship.id ===
+      relationshipId,
+  );
+}
+
+function getCommercialRelationship(
+  model: EcosystemModel,
+  relationshipId: string,
+): CommercialRelationship | undefined {
+  return model.commercialRelationships.find(
+    (relationship) =>
+      relationship.id ===
+      relationshipId,
+  );
+}
+
+/* =========================================================
+   FLUXOS
+   ========================================================= */
+
+function flowExists(
+  model: EcosystemModel,
+  flowId: string,
+): boolean {
+  return model.flows.some(
+    (flow) =>
+      flow.id === flowId,
   );
 }
 
 /**
- * Gera o conteúdo temporário de copiar/colar.
- *
- * As relações copiadas são apenas aquelas cujas duas
- * extremidades pertencem à seleção.
+ * Verifica se já existe outro fluxo com o mesmo código.
  *
  * Exemplo:
  *
- * A ─── B ─── C
+ * P.1
  *
- * Se A e B forem copiados, a relação A-B também é copiada.
- * A relação B-C não é copiada porque C não pertence
- * à seleção.
+ * não pode aparecer duas vezes.
+ */
+function flowCodeExists(
+  model: EcosystemModel,
+  type: FlowType,
+  identifier: number,
+  ignoredFlowId?: string,
+): boolean {
+  return model.flows.some(
+    (flow) =>
+      flow.id !== ignoredFlowId &&
+      flow.type === type &&
+      flow.identifier === identifier,
+  );
+}
+
+/* =========================================================
+   GATEWAYS
+   ========================================================= */
+
+function gatewayExists(
+  model: EcosystemModel,
+  gatewayId: string,
+): boolean {
+  return model.gateways.some(
+    (gateway) =>
+      gateway.id === gatewayId,
+  );
+}
+
+/* =========================================================
+   CLIPBOARD
+   ========================================================= */
+
+/**
+ * Constrói o clipboard a partir dos atores selecionados.
+ *
+ * Exemplo:
+ *
+ * A ───── B ───── C
+ *
+ * Se A e B forem selecionados:
+ *
+ * - A é copiado;
+ * - B é copiado;
+ * - relação A-B é copiada;
+ * - fluxos da relação A-B são copiados;
+ * - relação B-C não é copiada.
  */
 function buildClipboard(
   model: EcosystemModel,
@@ -189,88 +317,125 @@ function buildClipboard(
     return null;
   }
 
-  const relationships =
-    model.relationships.filter(
+  const commercialRelationships =
+    model.commercialRelationships.filter(
       (relationship) =>
         ids.has(
-          relationship.sourceActorId,
+          relationship.actorAId,
         ) &&
         ids.has(
-          relationship.targetActorId,
+          relationship.actorBId,
+        ),
+    );
+
+  const relationshipIds =
+    new Set(
+      commercialRelationships.map(
+        (relationship) =>
+          relationship.id,
+      ),
+    );
+
+  const flows =
+    model.flows.filter(
+      (flow) =>
+        relationshipIds.has(
+          flow.commercialRelationshipId,
         ),
     );
 
   return {
     actors:
-      structuredClone(actors),
-
-    relationships:
       structuredClone(
-        relationships,
+        actors,
+      ),
+
+    commercialRelationships:
+      structuredClone(
+        commercialRelationships,
+      ),
+
+    flows:
+      structuredClone(
+        flows,
       ),
 
     origin: {
-      x: Math.min(
-        ...actors.map(
-          (actor) =>
-            actor.position.x,
+      x:
+        Math.min(
+          ...actors.map(
+            (actor) =>
+              actor.position.x,
+          ),
         ),
-      ),
 
-      y: Math.min(
-        ...actors.map(
-          (actor) =>
-            actor.position.y,
+      y:
+        Math.min(
+          ...actors.map(
+            (actor) =>
+              actor.position.y,
+          ),
         ),
-      ),
     },
 
-    pasteCount: 0,
+    pasteCount:
+      0,
   };
 }
 
 /**
- * Cola atores previamente copiados.
+ * Cola atores e recria corretamente:
  *
- * Regras:
+ * - IDs dos atores;
+ * - Relações Comerciais;
+ * - Fluxos;
+ * - códigos dos Fluxos.
  *
- * 1. IDs são sempre recriados.
- * 2. Nomes continuam únicos.
- * 3. Relações internas da seleção são preservadas.
- * 4. A Companhia de Interesse não pode ser duplicada.
+ * Os códigos dos Fluxos são recalculados para evitar
+ * duplicidades como dois P.1 no mesmo modelo.
  */
 function pasteActors(
   model: EcosystemModel,
   clipboard: ActorClipboard,
   targetPosition?: Position,
 ): PasteResult {
-  const idMap =
-    new Map<string, string>();
+  const actorIdMap =
+    new Map<
+      string,
+      string
+    >();
+
+  const relationshipIdMap =
+    new Map<
+      string,
+      string
+    >();
 
   const createdActors:
     Actor[] = [];
+
+  const createdRelationships:
+    CommercialRelationship[] =
+      [];
+
+  const createdFlows:
+    Flow[] = [];
 
   let skippedCompanyOfInterest =
     false;
 
   let companyAlreadyExists =
-    hasCompanyOfInterest(model);
+    hasCompanyOfInterest(
+      model,
+    );
 
-  /**
-   * Cada colagem realizada pelo teclado desloca
-   * progressivamente os novos elementos.
-   */
   const step =
     38 *
-    (clipboard.pasteCount + 1);
+    (
+      clipboard.pasteCount +
+      1
+    );
 
-  /**
-   * Quando targetPosition é recebido, a origem da seleção
-   * é posicionada naquele ponto.
-   *
-   * Isso é usado, por exemplo, pelo menu de contexto
-   * do canvas.
-   */
   const offset =
     targetPosition
       ? {
@@ -287,14 +452,14 @@ function pasteActors(
           y: step,
         };
 
+  /* -------------------------------------------------------
+     ATORES
+     ------------------------------------------------------- */
+
   for (
     const source
     of clipboard.actors
   ) {
-    /**
-     * A CoI representa a organização focal
-     * do ecossistema e é única no modelo.
-     */
     if (
       source.type ===
         'company_of_interest' &&
@@ -325,7 +490,7 @@ function pasteActors(
         ],
       );
 
-    const copiedActor: Actor = {
+    createdActors.push({
       ...structuredClone(
         source,
       ),
@@ -343,13 +508,9 @@ function pasteActors(
           source.position.y +
           offset.y,
       },
-    };
+    });
 
-    createdActors.push(
-      copiedActor,
-    );
-
-    idMap.set(
+    actorIdMap.set(
       source.id,
       id,
     );
@@ -363,49 +524,119 @@ function pasteActors(
     }
   }
 
-  /**
-   * Recria apenas as relações cujos dois atores
-   * conseguiram ser copiados.
-   *
-   * Isso é especialmente importante quando uma CoI
-   * é ignorada durante a duplicação.
-   */
-  const createdRelationships:
-    Relationship[] =
-      clipboard.relationships
-        .filter(
-          (relationship) =>
-            idMap.has(
-              relationship
-                .sourceActorId,
-            ) &&
-            idMap.has(
-              relationship
-                .targetActorId,
-            ),
-        )
-        .map(
-          (relationship) => ({
-            ...structuredClone(
-              relationship,
-            ),
+  /* -------------------------------------------------------
+     RELAÇÕES COMERCIAIS
+     ------------------------------------------------------- */
 
-            id:
-              crypto.randomUUID(),
+  for (
+    const source
+    of clipboard.commercialRelationships
+  ) {
+    const actorAId =
+      actorIdMap.get(
+        source.actorAId,
+      );
 
-            sourceActorId:
-              idMap.get(
-                relationship
-                  .sourceActorId,
-              )!,
+    const actorBId =
+      actorIdMap.get(
+        source.actorBId,
+      );
 
-            targetActorId:
-              idMap.get(
-                relationship
-                  .targetActorId,
-              )!,
-          }),
-        );
+    /**
+     * Caso algum ator tenha sido ignorado,
+     * como a CoI, esta relação também não é copiada.
+     */
+    if (
+      !actorAId ||
+      !actorBId
+    ) {
+      continue;
+    }
+
+    const id =
+      crypto.randomUUID();
+
+    createdRelationships.push({
+      ...structuredClone(
+        source,
+      ),
+
+      id,
+
+      actorAId,
+
+      actorBId,
+    });
+
+    relationshipIdMap.set(
+      source.id,
+      id,
+    );
+  }
+
+  /* -------------------------------------------------------
+     FLUXOS
+     ------------------------------------------------------- */
+
+  for (
+    const source
+    of clipboard.flows
+  ) {
+    const commercialRelationshipId =
+      relationshipIdMap.get(
+        source.commercialRelationshipId,
+      );
+
+    const sourceActorId =
+      actorIdMap.get(
+        source.sourceActorId,
+      );
+
+    const targetActorId =
+      actorIdMap.get(
+        source.targetActorId,
+      );
+
+    if (
+      !commercialRelationshipId ||
+      !sourceActorId ||
+      !targetActorId
+    ) {
+      continue;
+    }
+
+    /**
+     * A numeração precisa considerar:
+     *
+     * - Fluxos já existentes no modelo;
+     * - Fluxos criados nesta mesma operação.
+     */
+    const identifier =
+      nextFlowIdentifier(
+        source.type,
+        [
+          ...model.flows,
+          ...createdFlows,
+        ],
+      );
+
+    createdFlows.push({
+      ...structuredClone(
+        source,
+      ),
+
+      id:
+        crypto.randomUUID(),
+
+      commercialRelationshipId,
+
+      sourceActorId,
+
+      targetActorId,
+
+      identifier,
+    });
+  }
 
   return {
     model: {
@@ -416,25 +647,391 @@ function pasteActors(
         ...createdActors,
       ],
 
-      relationships: [
-        ...model.relationships,
+      commercialRelationships: [
+        ...model.commercialRelationships,
         ...createdRelationships,
+      ],
+
+      flows: [
+        ...model.flows,
+        ...createdFlows,
       ],
     },
 
     actorIds:
       createdActors.map(
-        (actor) => actor.id,
+        (actor) =>
+          actor.id,
       ),
 
-    relationshipIds:
+    commercialRelationshipIds:
       createdRelationships.map(
         (relationship) =>
           relationship.id,
       ),
 
+    flowIds:
+      createdFlows.map(
+        (flow) =>
+          flow.id,
+      ),
+
     skippedCompanyOfInterest,
   };
+}
+
+/* =========================================================
+   MIGRAÇÃO DO MODELO ANTIGO
+   ========================================================= */
+
+function isLegacyRelationship(
+  value: unknown,
+): value is LegacyRelationship {
+  if (
+    !value ||
+    typeof value !==
+      'object'
+  ) {
+    return false;
+  }
+
+  const candidate =
+    value as Partial<
+      LegacyRelationship
+    >;
+
+  return (
+    typeof candidate.id ===
+      'string' &&
+    typeof candidate.sourceActorId ===
+      'string' &&
+    typeof candidate.targetActorId ===
+      'string' &&
+    (
+      candidate.type ===
+        'product' ||
+      candidate.type ===
+        'service' ||
+      candidate.type ===
+        'financial' ||
+      candidate.type ===
+        'information'
+    )
+  );
+}
+
+function isLegacyModel(
+  value: unknown,
+): value is LegacyModel {
+  if (
+    !value ||
+    typeof value !==
+      'object'
+  ) {
+    return false;
+  }
+
+  const candidate =
+    value as Partial<
+      LegacyModel
+    >;
+
+  return (
+    Array.isArray(
+      candidate.actors,
+    ) &&
+    Array.isArray(
+      candidate.relationships,
+    ) &&
+    candidate.relationships.every(
+      isLegacyRelationship,
+    )
+  );
+}
+
+/**
+ * Migra automaticamente o modelo utilizado na versão
+ * anterior deste frontend.
+ *
+ * Cada Relationship antigo se transforma em:
+ *
+ * 1 Relação Comercial
+ * +
+ * 1 Fluxo
+ */
+function migrateLegacyModel(
+  legacy: LegacyModel,
+): EcosystemModel {
+  const commercialRelationships:
+    CommercialRelationship[] =
+      [];
+
+  const flows:
+    Flow[] = [];
+
+  for (
+    const oldRelationship
+    of legacy.relationships
+  ) {
+    const relationship =
+      createCommercialRelationship(
+        oldRelationship.sourceActorId,
+        oldRelationship.targetActorId,
+      );
+
+    relationship.description =
+      oldRelationship.description ??
+      '';
+
+    commercialRelationships.push(
+      relationship,
+    );
+
+    const flowType: FlowType =
+      oldRelationship.type ===
+      'information'
+        ? 'content'
+        : oldRelationship.type;
+
+    const flow =
+      createFlow(
+        relationship.id,
+        oldRelationship.sourceActorId,
+        oldRelationship.targetActorId,
+        flowType,
+        flows,
+      );
+
+    flow.name =
+      oldRelationship.name ??
+      '';
+
+    flow.description =
+      oldRelationship.description ??
+      '';
+
+    flows.push(
+      flow,
+    );
+  }
+
+  return {
+    schemaVersion:
+      MODEL_SCHEMA_VERSION,
+
+    id:
+      legacy.id ||
+      crypto.randomUUID(),
+
+    name:
+      legacy.name ||
+      'Meu Ecossistema',
+
+    description:
+      legacy.description ||
+      '',
+
+    actors:
+      structuredClone(
+        legacy.actors,
+      ),
+
+    commercialRelationships,
+
+    flows,
+
+    gateways:
+      [],
+
+    updatedAt:
+      new Date().toISOString(),
+  };
+}
+
+/* =========================================================
+   VALIDAÇÃO DE PERSISTÊNCIA
+   ========================================================= */
+
+function isValidStoredActor(
+  actor: unknown,
+): actor is Actor {
+  if (
+    !actor ||
+    typeof actor !==
+      'object'
+  ) {
+    return false;
+  }
+
+  const candidate =
+    actor as Partial<Actor>;
+
+  return (
+    typeof candidate.id ===
+      'string' &&
+    typeof candidate.name ===
+      'string' &&
+    typeof candidate.description ===
+      'string' &&
+    isActorType(
+      candidate.type,
+    ) &&
+    candidate.position !==
+      undefined &&
+    typeof candidate.position.x ===
+      'number' &&
+    typeof candidate.position.y ===
+      'number'
+  );
+}
+
+function isValidStoredCommercialRelationship(
+  relationship: unknown,
+): relationship is CommercialRelationship {
+  if (
+    !relationship ||
+    typeof relationship !==
+      'object'
+  ) {
+    return false;
+  }
+
+  const candidate =
+    relationship as Partial<
+      CommercialRelationship
+    >;
+
+  return (
+    typeof candidate.id ===
+      'string' &&
+    typeof candidate.actorAId ===
+      'string' &&
+    typeof candidate.actorBId ===
+      'string' &&
+    typeof candidate.description ===
+      'string'
+  );
+}
+
+function isValidStoredFlow(
+  flow: unknown,
+): flow is Flow {
+  if (
+    !flow ||
+    typeof flow !==
+      'object'
+  ) {
+    return false;
+  }
+
+  const candidate =
+    flow as Partial<Flow>;
+
+  return (
+    typeof candidate.id ===
+      'string' &&
+    typeof candidate.commercialRelationshipId ===
+      'string' &&
+    typeof candidate.sourceActorId ===
+      'string' &&
+    typeof candidate.targetActorId ===
+      'string' &&
+    isFlowType(
+      candidate.type,
+    ) &&
+    typeof candidate.identifier ===
+      'number' &&
+    isValidFlowIdentifier(
+      candidate.identifier,
+    ) &&
+    typeof candidate.name ===
+      'string' &&
+    typeof candidate.description ===
+      'string'
+  );
+}
+
+function isValidStoredGateway(
+  gateway: unknown,
+): gateway is Gateway {
+  if (
+    !gateway ||
+    typeof gateway !==
+      'object'
+  ) {
+    return false;
+  }
+
+  const candidate =
+    gateway as Partial<Gateway>;
+
+  return (
+    typeof candidate.id ===
+      'string' &&
+    isGatewayType(
+      candidate.type,
+    ) &&
+    candidate.position !==
+      undefined &&
+    typeof candidate.position.x ===
+      'number' &&
+    typeof candidate.position.y ===
+      'number'
+  );
+}
+
+function isCurrentModel(
+  value: unknown,
+): value is EcosystemModel {
+  if (
+    !value ||
+    typeof value !==
+      'object'
+  ) {
+    return false;
+  }
+
+  const candidate =
+    value as Partial<
+      EcosystemModel
+    >;
+
+  return (
+    candidate.schemaVersion ===
+      MODEL_SCHEMA_VERSION &&
+    typeof candidate.id ===
+      'string' &&
+    typeof candidate.name ===
+      'string' &&
+    typeof candidate.description ===
+      'string' &&
+    Array.isArray(
+      candidate.actors,
+    ) &&
+    candidate.actors.every(
+      isValidStoredActor,
+    ) &&
+    Array.isArray(
+      candidate.commercialRelationships,
+    ) &&
+    candidate.commercialRelationships.every(
+      isValidStoredCommercialRelationship,
+    ) &&
+    Array.isArray(
+      candidate.flows,
+    ) &&
+    candidate.flows.every(
+      isValidStoredFlow,
+    ) &&
+    Array.isArray(
+      candidate.gateways,
+    ) &&
+    candidate.gateways.every(
+      isValidStoredGateway,
+    ) &&
+    typeof candidate.updatedAt ===
+      'string'
+  );
 }
 
 /* =========================================================
@@ -475,7 +1072,10 @@ interface EditorState {
     id: string,
     patch:
       Partial<
-        Omit<Actor, 'id'>
+        Omit<
+          Actor,
+          'id'
+        >
       >,
     recordHistory?: boolean,
   ) => void;
@@ -486,26 +1086,54 @@ interface EditorState {
   ) => void;
 
   /* -------------------------------------------------------
-     RELAÇÕES
+     RELAÇÕES COMERCIAIS
      ------------------------------------------------------- */
 
-  addRelationship: (
-    sourceActorId: string,
-    targetActorId: string,
-  ) => void;
+  addCommercialRelationship: (
+    actorAId: string,
+    actorBId: string,
+  ) => string | null;
 
-  updateRelationship: (
+  updateCommercialRelationship: (
     id: string,
     patch:
       Partial<
         Omit<
-          Relationship,
+          CommercialRelationship,
           | 'id'
-          | 'sourceActorId'
-          | 'targetActorId'
+          | 'actorAId'
+          | 'actorBId'
         >
       >,
     recordHistory?: boolean,
+  ) => void;
+
+  /* -------------------------------------------------------
+     FLUXOS
+     ------------------------------------------------------- */
+
+  addFlow: (
+    commercialRelationshipId: string,
+    sourceActorId: string,
+    targetActorId: string,
+    type?: FlowType,
+  ) => string | null;
+
+  updateFlow: (
+    id: string,
+    patch:
+      Partial<
+        Omit<
+          Flow,
+          | 'id'
+          | 'commercialRelationshipId'
+        >
+      >,
+    recordHistory?: boolean,
+  ) => void;
+
+  swapFlowDirection: (
+    id: string,
   ) => void;
 
   /* -------------------------------------------------------
@@ -517,14 +1145,24 @@ interface EditorState {
 
   setSelection: (
     actorIds: string[],
-    relationshipIds?: string[],
+    commercialRelationshipIds?: string[],
+    flowIds?: string[],
+    gatewayIds?: string[],
   ) => void;
 
   selectOnlyActor: (
     id: string,
   ) => void;
 
-  selectOnlyRelationship: (
+  selectOnlyCommercialRelationship: (
+    id: string,
+  ) => void;
+
+  selectOnlyFlow: (
+    id: string,
+  ) => void;
+
+  selectOnlyGateway: (
     id: string,
   ) => void;
 
@@ -544,7 +1182,7 @@ interface EditorState {
   ) => void;
 
   /* -------------------------------------------------------
-     TRANSAÇÕES / HISTÓRICO
+     HISTÓRICO
      ------------------------------------------------------- */
 
   beginTransaction:
@@ -574,7 +1212,7 @@ interface EditorState {
     () => boolean;
 
   /* -------------------------------------------------------
-     PERSISTÊNCIA LOCAL
+     PERSISTÊNCIA
      ------------------------------------------------------- */
 
   saveLocal: (
@@ -604,6 +1242,10 @@ interface EditorState {
     () => void;
 }
 
+/* =========================================================
+   SET STATE
+   ========================================================= */
+
 type SetState = (
   partial:
     | Partial<EditorState>
@@ -617,55 +1259,56 @@ type SetState = (
    HISTÓRICO
    ========================================================= */
 
-/**
- * Executa uma alteração registrando o estado anterior
- * para Undo.
- */
 function commitMutation(
   set: SetState,
   mutate: (
     model: EcosystemModel,
   ) => EcosystemModel,
 ): void {
-  set((state) => {
-    const previous =
-      cloneModel(
-        state.model,
-      );
+  set(
+    (state) => {
+      const previous =
+        cloneModel(
+          state.model,
+        );
 
-    const next =
-      touch(
-        mutate(
-          cloneModel(
-            state.model,
+      const next =
+        touch(
+          mutate(
+            cloneModel(
+              state.model,
+            ),
           ),
+        );
+
+      if (
+        sameModel(
+          previous,
+          next,
+        )
+      ) {
+        return {};
+      }
+
+      return {
+        model:
+          next,
+
+        past: [
+          ...state.past,
+          previous,
+        ].slice(
+          -HISTORY_LIMIT,
         ),
-      );
 
-    if (
-      sameModel(
-        previous,
-        next,
-      )
-    ) {
-      return {};
-    }
+        future:
+          [],
 
-    return {
-      model: next,
-
-      past: [
-        ...state.past,
-        previous,
-      ].slice(
-        -HISTORY_LIMIT,
-      ),
-
-      future: [],
-
-      transactionBase: null,
-    };
-  });
+        transactionBase:
+          null,
+      };
+    },
+  );
 }
 
 /* =========================================================
@@ -681,9 +1324,11 @@ export const useEditorStore =
       selection:
         EMPTY_SELECTION,
 
-      past: [],
+      past:
+        [],
 
-      future: [],
+      future:
+        [],
 
       transactionBase:
         null,
@@ -702,12 +1347,6 @@ export const useEditorStore =
         type,
         position,
       ) => {
-        /**
-         * Regra SSN da ECOS Modeling:
-         *
-         * somente uma Companhia de Interesse
-         * pode existir por modelo.
-         */
         if (
           type ===
             'company_of_interest' &&
@@ -744,11 +1383,11 @@ export const useEditorStore =
 
         set({
           selection: {
+            ...EMPTY_SELECTION,
+
             actorIds: [
               actor.id,
             ],
-
-            relationshipIds: [],
           },
         });
 
@@ -760,10 +1399,6 @@ export const useEditorStore =
         patch,
         recordHistory = true,
       ) => {
-        /**
-         * Impede conversão de outro ator
-         * para CoI quando uma CoI já existe.
-         */
         if (
           patch.type ===
             'company_of_interest' &&
@@ -780,10 +1415,6 @@ export const useEditorStore =
           return;
         }
 
-        /**
-         * Se patch.type veio de alguma fonte externa,
-         * garantimos também que seja um ator reconhecido.
-         */
         if (
           patch.type !==
             undefined &&
@@ -854,86 +1485,70 @@ export const useEditorStore =
       },
 
       /* ===================================================
-         RELAÇÕES
+         RELAÇÃO COMERCIAL
          =================================================== */
 
-      addRelationship: (
-        sourceActorId,
-        targetActorId,
+      addCommercialRelationship: (
+        actorAId,
+        actorBId,
       ) => {
         const model =
           get().model;
 
-        /**
-         * Ambas as extremidades devem existir.
-         */
         if (
           !actorExists(
             model,
-            sourceActorId,
+            actorAId,
           ) ||
           !actorExists(
             model,
-            targetActorId,
+            actorBId,
           )
         ) {
           get().showNotice(
-            'Não foi possível criar a relação porque um dos atores não existe.',
+            'Não foi possível criar a Relação Comercial porque um dos atores não existe.',
             'error',
           );
 
-          return;
+          return null;
         }
 
-        /**
-         * Uma relação não conecta o ator a ele mesmo.
-         */
         if (
-          sourceActorId ===
-          targetActorId
+          actorAId ===
+          actorBId
         ) {
           get().showNotice(
-            'Uma relação deve conectar dois atores diferentes.',
+            'Uma Relação Comercial deve conectar dois atores diferentes.',
             'warning',
           );
 
-          return;
+          return null;
         }
 
         /**
-         * Evita duplicação direta da mesma relação.
+         * Relação Comercial não possui direção.
          *
-         * Relações em sentidos opostos continuam permitidas
-         * porque representam conexões distintas.
+         * A-B e B-A representam a mesma relação.
          */
-        const alreadyExists =
-          model.relationships.some(
-            (
-              relationship,
-            ) =>
-              relationship
-                .sourceActorId ===
-                sourceActorId &&
-              relationship
-                .targetActorId ===
-                targetActorId,
-          );
-
         if (
-          alreadyExists
+          commercialRelationshipExistsBetween(
+            model,
+            actorAId,
+            actorBId,
+          )
         ) {
           get().showNotice(
-            'Essa relação já existe entre os dois atores.',
+            'Já existe uma Relação Comercial entre esses atores.',
             'info',
           );
 
-          return;
+          return null;
         }
 
         const relationship =
-          createRelationship(
-            sourceActorId,
-            targetActorId,
+          createCommercialRelationship(
+            actorAId,
+            actorBId,
           );
 
         commitMutation(
@@ -941,8 +1556,8 @@ export const useEditorStore =
           (current) => ({
             ...current,
 
-            relationships: [
-              ...current.relationships,
+            commercialRelationships: [
+              ...current.commercialRelationships,
               relationship,
             ],
           }),
@@ -950,16 +1565,18 @@ export const useEditorStore =
 
         set({
           selection: {
-            actorIds: [],
+            ...EMPTY_SELECTION,
 
-            relationshipIds: [
+            commercialRelationshipIds: [
               relationship.id,
             ],
           },
         });
+
+        return relationship.id;
       },
 
-      updateRelationship: (
+      updateCommercialRelationship: (
         id,
         patch,
         recordHistory = true,
@@ -970,11 +1587,9 @@ export const useEditorStore =
         ): EcosystemModel => ({
           ...model,
 
-          relationships:
-            model.relationships.map(
-              (
-                relationship,
-              ) =>
+          commercialRelationships:
+            model.commercialRelationships.map(
+              (relationship) =>
                 relationship.id === id
                   ? {
                       ...relationship,
@@ -1008,71 +1623,386 @@ export const useEditorStore =
       },
 
       /* ===================================================
+         FLUXOS
+         =================================================== */
+
+      addFlow: (
+        commercialRelationshipId,
+        sourceActorId,
+        targetActorId,
+        type = 'service',
+      ) => {
+        const model =
+          get().model;
+
+        const relationship =
+          getCommercialRelationship(
+            model,
+            commercialRelationshipId,
+          );
+
+        if (
+          !relationship
+        ) {
+          get().showNotice(
+            'A Relação Comercial informada não existe.',
+            'error',
+          );
+
+          return null;
+        }
+
+        if (
+          !isFlowType(
+            type,
+          )
+        ) {
+          get().showNotice(
+            'Tipo de Fluxo SSN inválido.',
+            'error',
+          );
+
+          return null;
+        }
+
+        if (
+          sourceActorId ===
+          targetActorId
+        ) {
+          get().showNotice(
+            'Um Fluxo deve ocorrer entre dois atores diferentes.',
+            'warning',
+          );
+
+          return null;
+        }
+
+        const validDirection =
+          (
+            relationship.actorAId ===
+              sourceActorId &&
+            relationship.actorBId ===
+              targetActorId
+          ) ||
+          (
+            relationship.actorAId ===
+              targetActorId &&
+            relationship.actorBId ===
+              sourceActorId
+          );
+
+        if (
+          !validDirection
+        ) {
+          get().showNotice(
+            'O Fluxo deve ocorrer entre os dois atores pertencentes à Relação Comercial.',
+            'warning',
+          );
+
+          return null;
+        }
+
+        const flow =
+          createFlow(
+            commercialRelationshipId,
+            sourceActorId,
+            targetActorId,
+            type,
+            model.flows,
+          );
+
+        commitMutation(
+          set,
+          (current) => ({
+            ...current,
+
+            flows: [
+              ...current.flows,
+              flow,
+            ],
+          }),
+        );
+
+        set({
+          selection: {
+            ...EMPTY_SELECTION,
+
+            flowIds: [
+              flow.id,
+            ],
+          },
+        });
+
+        return flow.id;
+      },
+
+      updateFlow: (
+        id,
+        patch,
+        recordHistory = true,
+      ) => {
+        const model =
+          get().model;
+
+        const current =
+          model.flows.find(
+            (flow) =>
+              flow.id === id,
+          );
+
+        if (
+          !current
+        ) {
+          return;
+        }
+
+        if (
+          patch.type !==
+            undefined &&
+          !isFlowType(
+            patch.type,
+          )
+        ) {
+          get().showNotice(
+            'Tipo de Fluxo SSN inválido.',
+            'error',
+          );
+
+          return;
+        }
+
+        const candidate: Flow = {
+          ...current,
+          ...patch,
+        };
+
+        if (
+          !isValidFlowIdentifier(
+            candidate.identifier,
+          )
+        ) {
+          get().showNotice(
+            'O identificador do Fluxo deve ser um número inteiro maior que zero.',
+            'warning',
+          );
+
+          return;
+        }
+
+        if (
+          !flowMatchesCommercialRelationship(
+            model,
+            candidate,
+          )
+        ) {
+          get().showNotice(
+            'A origem e o destino do Fluxo devem corresponder aos atores da Relação Comercial.',
+            'warning',
+          );
+
+          return;
+        }
+
+        if (
+          flowCodeExists(
+            model,
+            candidate.type,
+            candidate.identifier,
+            id,
+          )
+        ) {
+          get().showNotice(
+            'Já existe outro Fluxo com esse código.',
+            'warning',
+          );
+
+          return;
+        }
+
+        const mutate = (
+          currentModel:
+            EcosystemModel,
+        ): EcosystemModel => ({
+          ...currentModel,
+
+          flows:
+            currentModel.flows.map(
+              (flow) =>
+                flow.id === id
+                  ? candidate
+                  : flow,
+            ),
+        });
+
+        if (
+          recordHistory
+        ) {
+          commitMutation(
+            set,
+            mutate,
+          );
+        } else {
+          set(
+            (state) => ({
+              model:
+                touch(
+                  mutate(
+                    cloneModel(
+                      state.model,
+                    ),
+                  ),
+                ),
+            }),
+          );
+        }
+      },
+
+      swapFlowDirection: (
+        id,
+      ) => {
+        const flow =
+          get()
+            .model
+            .flows
+            .find(
+              (item) =>
+                item.id === id,
+            );
+
+        if (!flow) {
+          return;
+        }
+
+        get().updateFlow(
+          id,
+          {
+            sourceActorId:
+              flow.targetActorId,
+
+            targetActorId:
+              flow.sourceActorId,
+          },
+        );
+      },
+
+      /* ===================================================
          EXCLUSÃO
          =================================================== */
 
       deleteSelection:
         () => {
-          const {
-            actorIds,
-            relationshipIds,
-          } =
+          const selection =
             get().selection;
-
-          if (
-            actorIds.length ===
-              0 &&
-            relationshipIds.length ===
-              0
-          ) {
-            return;
-          }
 
           const actorSet =
             new Set(
-              actorIds,
+              selection.actorIds,
             );
 
           const relationshipSet =
             new Set(
-              relationshipIds,
+              selection.commercialRelationshipIds,
             );
+
+          const flowSet =
+            new Set(
+              selection.flowIds,
+            );
+
+          const gatewaySet =
+            new Set(
+              selection.gatewayIds,
+            );
+
+          const totalSelected =
+            actorSet.size +
+            relationshipSet.size +
+            flowSet.size +
+            gatewaySet.size;
+
+          if (
+            totalSelected === 0
+          ) {
+            return;
+          }
 
           commitMutation(
             set,
-            (model) => ({
-              ...model,
-
-              actors:
-                model.actors.filter(
-                  (actor) =>
-                    !actorSet.has(
-                      actor.id,
-                    ),
-                ),
-
+            (model) => {
               /**
-               * Ao excluir um ator, todas as relações
-               * associadas são removidas junto com ele.
+               * Descobre relações removidas por exclusão
+               * direta ou por exclusão de ator.
                */
-              relationships:
-                model.relationships.filter(
-                  (
-                    relationship,
-                  ) =>
-                    !relationshipSet.has(
-                      relationship.id,
-                    ) &&
-                    !actorSet.has(
-                      relationship
-                        .sourceActorId,
-                    ) &&
-                    !actorSet.has(
-                      relationship
-                        .targetActorId,
+              const removedRelationshipIds =
+                new Set(
+                  model.commercialRelationships
+                    .filter(
+                      (relationship) =>
+                        relationshipSet.has(
+                          relationship.id,
+                        ) ||
+                        actorSet.has(
+                          relationship.actorAId,
+                        ) ||
+                        actorSet.has(
+                          relationship.actorBId,
+                        ),
+                    )
+                    .map(
+                      (relationship) =>
+                        relationship.id,
                     ),
-                ),
-            }),
+                );
+
+              return {
+                ...model,
+
+                actors:
+                  model.actors.filter(
+                    (actor) =>
+                      !actorSet.has(
+                        actor.id,
+                      ),
+                  ),
+
+                commercialRelationships:
+                  model.commercialRelationships.filter(
+                    (relationship) =>
+                      !removedRelationshipIds.has(
+                        relationship.id,
+                      ),
+                  ),
+
+                /**
+                 * Excluir Relação Comercial remove
+                 * automaticamente seus Fluxos.
+                 */
+                flows:
+                  model.flows.filter(
+                    (flow) =>
+                      !flowSet.has(
+                        flow.id,
+                      ) &&
+                      !removedRelationshipIds.has(
+                        flow.commercialRelationshipId,
+                      ) &&
+                      !actorSet.has(
+                        flow.sourceActorId,
+                      ) &&
+                      !actorSet.has(
+                        flow.targetActorId,
+                      ),
+                  ),
+
+                gateways:
+                  model.gateways.filter(
+                    (gateway) =>
+                      !gatewaySet.has(
+                        gateway.id,
+                      ),
+                  ),
+              };
+            },
           );
 
           set({
@@ -1087,46 +2017,58 @@ export const useEditorStore =
 
       setSelection: (
         actorIds,
-        relationshipIds = [],
+        commercialRelationshipIds = [],
+        flowIds = [],
+        gatewayIds = [],
       ) => {
         const model =
           get().model;
 
-        /**
-         * Mantemos apenas IDs que ainda existem.
-         */
-        const validActorIds =
-          unique(
-            actorIds,
-          ).filter(
-            (id) =>
-              model.actors.some(
-                (actor) =>
-                  actor.id === id,
-              ),
-          );
-
-        const validRelationshipIds =
-          unique(
-            relationshipIds,
-          ).filter(
-            (id) =>
-              model.relationships.some(
-                (
-                  relationship,
-                ) =>
-                  relationship.id ===
-                  id,
-              ),
-          );
-
         set({
           selection: {
             actorIds:
-              validActorIds,
+              unique(
+                actorIds,
+              ).filter(
+                (id) =>
+                  actorExists(
+                    model,
+                    id,
+                  ),
+              ),
 
-            relationshipIds:
-              validRelationshipIds,
+            commercialRelationshipIds:
+              unique(
+                commercialRelationshipIds,
+              ).filter(
+                (id) =>
+                  commercialRelationshipExists(
+                    model,
+                    id,
+                  ),
+              ),
+
+            flowIds:
+              unique(
+                flowIds,
+              ).filter(
+                (id) =>
+                  flowExists(
+                    model,
+                    id,
+                  ),
+              ),
+
+            gatewayIds:
+              unique(
+                gatewayIds,
+              ).filter(
+                (id) =>
+                  gatewayExists(
+                    model,
+                    id,
+                  ),
+              ),
           },
         });
       },
@@ -1145,39 +2087,78 @@ export const useEditorStore =
 
         set({
           selection: {
-            actorIds: [id],
+            ...EMPTY_SELECTION,
 
-            relationshipIds: [],
+            actorIds: [
+              id,
+            ],
           },
         });
       },
 
-      selectOnlyRelationship: (
+      selectOnlyCommercialRelationship: (
         id,
       ) => {
-        const exists =
-          get()
-            .model
-            .relationships
-            .some(
-              (
-                relationship,
-              ) =>
-                relationship.id ===
-                id,
-            );
-
         if (
-          !exists
+          !commercialRelationshipExists(
+            get().model,
+            id,
+          )
         ) {
           return;
         }
 
         set({
           selection: {
-            actorIds: [],
+            ...EMPTY_SELECTION,
 
-            relationshipIds: [
+            commercialRelationshipIds: [
+              id,
+            ],
+          },
+        });
+      },
+
+      selectOnlyFlow: (
+        id,
+      ) => {
+        if (
+          !flowExists(
+            get().model,
+            id,
+          )
+        ) {
+          return;
+        }
+
+        set({
+          selection: {
+            ...EMPTY_SELECTION,
+
+            flowIds: [
+              id,
+            ],
+          },
+        });
+      },
+
+      selectOnlyGateway: (
+        id,
+      ) => {
+        if (
+          !gatewayExists(
+            get().model,
+            id,
+          )
+        ) {
+          return;
+        }
+
+        set({
+          selection: {
+            ...EMPTY_SELECTION,
+
+            gatewayIds: [
               id,
             ],
           },
@@ -1196,6 +2177,8 @@ export const useEditorStore =
         () => {
           set({
             selection: {
+              ...EMPTY_SELECTION,
+
               actorIds:
                 get()
                   .model
@@ -1204,8 +2187,6 @@ export const useEditorStore =
                     (actor) =>
                       actor.id,
                   ),
-
-              relationshipIds: [],
             },
           });
         },
@@ -1223,7 +2204,6 @@ export const useEditorStore =
             EcosystemModel,
         ): EcosystemModel => ({
           ...model,
-
           name,
         });
 
@@ -1275,9 +2255,7 @@ export const useEditorStore =
             get()
               .transactionBase;
 
-          if (
-            !base
-          ) {
+          if (!base) {
             return;
           }
 
@@ -1299,7 +2277,8 @@ export const useEditorStore =
                   -HISTORY_LIMIT,
                 ),
 
-                future: [],
+                future:
+                  [],
 
                 transactionBase:
                   null,
@@ -1314,7 +2293,7 @@ export const useEditorStore =
         },
 
       /* ===================================================
-         UNDO
+         UNDO / REDO
          =================================================== */
 
       undo:
@@ -1325,8 +2304,7 @@ export const useEditorStore =
           } = get();
 
           if (
-            past.length ===
-            0
+            past.length === 0
           ) {
             return;
           }
@@ -1368,10 +2346,6 @@ export const useEditorStore =
           );
         },
 
-      /* ===================================================
-         REDO
-         =================================================== */
-
       redo:
         () => {
           const {
@@ -1380,8 +2354,7 @@ export const useEditorStore =
           } = get();
 
           if (
-            future.length ===
-            0
+            future.length === 0
           ) {
             return;
           }
@@ -1433,9 +2406,7 @@ export const useEditorStore =
                 .actorIds,
             );
 
-          if (
-            !clipboard
-          ) {
+          if (!clipboard) {
             get().showNotice(
               'Selecione pelo menos um ator para copiar.',
               'info',
@@ -1449,9 +2420,8 @@ export const useEditorStore =
           });
 
           get().showNotice(
-            clipboard
-              .actors
-              .length === 1
+            clipboard.actors.length ===
+              1
               ? 'Ator copiado.'
               : `${clipboard.actors.length} atores copiados.`,
             'success',
@@ -1470,9 +2440,7 @@ export const useEditorStore =
         const clipboard =
           get().clipboard;
 
-        if (
-          !clipboard
-        ) {
+        if (!clipboard) {
           get().showNotice(
             'Não há atores copiados para colar.',
             'info',
@@ -1489,9 +2457,8 @@ export const useEditorStore =
           );
 
         if (
-          result
-            .actorIds
-            .length === 0
+          result.actorIds.length ===
+          0
         ) {
           if (
             result
@@ -1517,8 +2484,14 @@ export const useEditorStore =
             actorIds:
               result.actorIds,
 
-            relationshipIds:
-              result.relationshipIds,
+            commercialRelationshipIds:
+              result.commercialRelationshipIds,
+
+            flowIds:
+              result.flowIds,
+
+            gatewayIds:
+              [],
           },
 
           clipboard: {
@@ -1557,9 +2530,7 @@ export const useEditorStore =
                 .actorIds,
             );
 
-          if (
-            !clipboard
-          ) {
+          if (!clipboard) {
             get().showNotice(
               'Selecione pelo menos um ator para duplicar.',
               'info',
@@ -1575,9 +2546,8 @@ export const useEditorStore =
             );
 
           if (
-            result
-              .actorIds
-              .length === 0
+            result.actorIds.length ===
+            0
           ) {
             get().showNotice(
               'A Companhia de Interesse (CoI) é única e não pode ser duplicada.',
@@ -1591,15 +2561,21 @@ export const useEditorStore =
             set,
             () =>
               result.model,
-          );
+        );
 
           set({
             selection: {
               actorIds:
                 result.actorIds,
 
-              relationshipIds:
-                result.relationshipIds,
+              commercialRelationshipIds:
+                result.commercialRelationshipIds,
+
+              flowIds:
+                result.flowIds,
+
+              gatewayIds:
+                [],
             },
           });
 
@@ -1631,9 +2607,7 @@ export const useEditorStore =
             ),
           );
 
-          if (
-            !silent
-          ) {
+          if (!silent) {
             get().showNotice(
               'Modelo salvo localmente.',
               'success',
@@ -1658,54 +2632,64 @@ export const useEditorStore =
               STORAGE_KEY,
             );
 
-          if (
-            !raw
-          ) {
+          if (!raw) {
             return false;
           }
 
           try {
-            const model =
-              JSON.parse(
-                raw,
-              ) as EcosystemModel;
+            const parsed:
+              unknown =
+                JSON.parse(raw);
 
-            const valid =
-              model.schemaVersion ===
-                '4.0-draft' &&
-              Array.isArray(
-                model.actors,
-              ) &&
-              Array.isArray(
-                model.relationships,
-              ) &&
-              model.actors.every(
-                (actor) =>
-                  actor &&
-                  typeof actor.id ===
-                    'string' &&
-                  typeof actor.name ===
-                    'string' &&
-                  actor.position &&
-                  typeof actor
-                    .position.x ===
-                    'number' &&
-                  typeof actor
-                    .position.y ===
-                    'number' &&
-                  isActorType(
-                    actor.type,
-                  ),
-              ) &&
-              validateCompanyOfInterest(
-                model,
-              );
+            let model:
+              EcosystemModel;
 
+            /**
+             * Modelo novo.
+             */
             if (
-              !valid
+              isCurrentModel(
+                parsed,
+              )
             ) {
+              model =
+                parsed;
+            }
+
+            /**
+             * Modelo salvo antes da separação entre
+             * Relação Comercial e Fluxo.
+             */
+            else if (
+              isLegacyModel(
+                parsed,
+              )
+            ) {
+              model =
+                migrateLegacyModel(
+                  parsed,
+                );
+
+              get().showNotice(
+                'O rascunho anterior foi migrado para a nova estrutura de Relações Comerciais e Fluxos.',
+                'info',
+              );
+            } else {
               get().showNotice(
                 'O rascunho local é incompatível com a estrutura SSN atual e não foi carregado.',
+                'warning',
+              );
+
+              return false;
+            }
+
+            if (
+              !validateCompanyOfInterest(
+                model,
+              )
+            ) {
+              get().showNotice(
+                'O rascunho possui mais de uma Companhia de Interesse e não pôde ser carregado.',
                 'warning',
               );
 
@@ -1718,9 +2702,11 @@ export const useEditorStore =
               selection:
                 EMPTY_SELECTION,
 
-              past: [],
+              past:
+                [],
 
-              future: [],
+              future:
+                [],
 
               transactionBase:
                 null,
@@ -1763,7 +2749,8 @@ export const useEditorStore =
                 -HISTORY_LIMIT,
               ),
 
-              future: [],
+              future:
+                [],
 
               transactionBase:
                 null,
@@ -1861,7 +2848,8 @@ export const useEditorStore =
       clearNotice:
         () => {
           set({
-            notice: null,
+            notice:
+              null,
           });
         },
     }),

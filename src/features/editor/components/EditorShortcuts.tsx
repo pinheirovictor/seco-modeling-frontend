@@ -6,11 +6,22 @@ import {
   useEditorStore,
 } from '../store/editorStore';
 
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
 /**
  * Verifica se o usuário está digitando em algum campo.
  *
- * Nesse caso os atalhos do editor não devem interferir
- * nas operações normais do navegador/campo.
+ * Enquanto o foco estiver em:
+ *
+ * - input;
+ * - textarea;
+ * - select;
+ * - elemento contentEditable;
+ *
+ * os atalhos globais do editor não devem interferir
+ * nas operações normais do campo ou do navegador.
  */
 function isEditableTarget(
   target: EventTarget | null,
@@ -32,6 +43,10 @@ function isEditableTarget(
   );
 }
 
+/* =========================================================
+   COMPONENTE
+   ========================================================= */
+
 /**
  * Atalhos globais do editor da ECOS Modeling.
  *
@@ -40,61 +55,126 @@ function isEditableTarget(
  *
  * Windows/Linux:
  * Ctrl
+ *
+ * Atalhos:
+ *
+ * Delete / Backspace
+ *   Excluir elementos selecionados.
+ *
+ * Esc
+ *   Limpar seleção.
+ *
+ * Ctrl/Cmd + Z
+ *   Desfazer.
+ *
+ * Ctrl/Cmd + Shift + Z
+ *   Refazer.
+ *
+ * Ctrl + Y
+ *   Refazer.
+ *
+ * Ctrl/Cmd + C
+ *   Copiar atores selecionados.
+ *
+ * Ctrl/Cmd + V
+ *   Colar atores.
+ *
+ * Ctrl/Cmd + D
+ *   Duplicar atores selecionados.
+ *
+ * Ctrl/Cmd + A
+ *   Selecionar todos os atores.
+ *
+ * Ctrl/Cmd + S
+ *   Salvar localmente.
  */
 export function EditorShortcuts() {
+  /* =======================================================
+     ESTADO
+     ======================================================= */
+
+  const selectedActorCount =
+    useEditorStore(
+      (state) =>
+        state.selection.actorIds.length,
+    );
+
+  const clipboard =
+    useEditorStore(
+      (state) =>
+        state.clipboard,
+    );
+
+  /* =======================================================
+     AÇÕES
+     ======================================================= */
+
   const undo =
     useEditorStore(
-      (state) => state.undo,
+      (state) =>
+        state.undo,
     );
 
   const redo =
     useEditorStore(
-      (state) => state.redo,
+      (state) =>
+        state.redo,
     );
 
   const deleteSelection =
     useEditorStore(
-      (state) => state.deleteSelection,
+      (state) =>
+        state.deleteSelection,
     );
 
   const clearSelection =
     useEditorStore(
-      (state) => state.clearSelection,
+      (state) =>
+        state.clearSelection,
     );
 
   const selectAllActors =
     useEditorStore(
-      (state) => state.selectAllActors,
+      (state) =>
+        state.selectAllActors,
     );
 
   const copySelectedActors =
     useEditorStore(
-      (state) => state.copySelectedActors,
+      (state) =>
+        state.copySelectedActors,
     );
 
   const pasteClipboard =
     useEditorStore(
-      (state) => state.pasteClipboard,
+      (state) =>
+        state.pasteClipboard,
     );
 
   const duplicateSelectedActors =
     useEditorStore(
-      (state) => state.duplicateSelectedActors,
+      (state) =>
+        state.duplicateSelectedActors,
     );
 
   const saveLocal =
     useEditorStore(
-      (state) => state.saveLocal,
+      (state) =>
+        state.saveLocal,
     );
+
+  /* =======================================================
+     ATALHOS
+     ======================================================= */
 
   useEffect(() => {
     const handleKeyDown = (
       event: KeyboardEvent,
     ) => {
-      /**
-       * Não executamos atalhos do editor enquanto
-       * o usuário estiver digitando.
-       */
+      /* ---------------------------------------------------
+         CAMPOS EDITÁVEIS
+         --------------------------------------------------- */
+
       if (
         isEditableTarget(
           event.target,
@@ -103,8 +183,13 @@ export function EditorShortcuts() {
         return;
       }
 
+      /* ---------------------------------------------------
+         ALT
+         --------------------------------------------------- */
+
       /**
-       * Evita interferência de combinações com Alt.
+       * Evita conflito com atalhos do sistema operacional
+       * e do navegador.
        */
       if (
         event.altKey
@@ -123,6 +208,15 @@ export function EditorShortcuts() {
          DELETE
          =================================================== */
 
+      /**
+       * deleteSelection() já conhece todos os elementos
+       * atualmente suportados:
+       *
+       * - atores;
+       * - Relações Comerciais;
+       * - Fluxos;
+       * - Gateways.
+       */
       if (
         event.key === 'Delete' ||
         event.key === 'Backspace'
@@ -147,7 +241,7 @@ export function EditorShortcuts() {
       }
 
       /**
-       * Os comandos restantes exigem Ctrl ou Cmd.
+       * Os comandos abaixo exigem Ctrl ou Cmd.
        */
       if (
         !command
@@ -176,8 +270,8 @@ export function EditorShortcuts() {
       }
 
       /**
-       * Ctrl+Y continua disponível principalmente
-       * para usuários Windows/Linux.
+       * Ctrl+Y é mantido principalmente para
+       * Windows/Linux.
        */
       if (
         key === 'y'
@@ -193,8 +287,19 @@ export function EditorShortcuts() {
          COPIAR
          =================================================== */
 
+      /**
+       * A operação de copiar continua orientada a atores.
+       *
+       * Relações Comerciais e Fluxos existentes entre
+       * os atores selecionados são incluídos
+       * automaticamente no clipboard pela Store.
+       *
+       * Se apenas uma Relação Comercial ou Fluxo estiver
+       * selecionado, não interceptamos Ctrl/Cmd+C.
+       */
       if (
-        key === 'c'
+        key === 'c' &&
+        selectedActorCount > 0
       ) {
         event.preventDefault();
 
@@ -207,8 +312,13 @@ export function EditorShortcuts() {
          COLAR
          =================================================== */
 
+      /**
+       * Só interceptamos o comando quando realmente existe
+       * conteúdo no clipboard interno da ECOS Modeling.
+       */
       if (
-        key === 'v'
+        key === 'v' &&
+        clipboard !== null
       ) {
         event.preventDefault();
 
@@ -221,8 +331,13 @@ export function EditorShortcuts() {
          DUPLICAR
          =================================================== */
 
+      /**
+       * Duplicação também continua sendo baseada
+       * na seleção de atores.
+       */
       if (
-        key === 'd'
+        key === 'd' &&
+        selectedActorCount > 0
       ) {
         event.preventDefault();
 
@@ -273,6 +388,7 @@ export function EditorShortcuts() {
     };
   }, [
     clearSelection,
+    clipboard,
     copySelectedActors,
     deleteSelection,
     duplicateSelectedActors,
@@ -280,11 +396,14 @@ export function EditorShortcuts() {
     redo,
     saveLocal,
     selectAllActors,
+    selectedActorCount,
     undo,
   ]);
 
   /**
-   * Este componente não possui interface visual.
+   * Componente comportamental.
+   *
+   * Não possui representação visual.
    */
   return null;
 }

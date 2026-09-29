@@ -38,27 +38,32 @@ export function EditorToolbar() {
 
   const model =
     useEditorStore(
-      (state) => state.model,
+      (state) =>
+        state.model,
     );
 
   const past =
     useEditorStore(
-      (state) => state.past,
+      (state) =>
+        state.past,
     );
 
   const future =
     useEditorStore(
-      (state) => state.future,
+      (state) =>
+        state.future,
     );
 
   const selection =
     useEditorStore(
-      (state) => state.selection,
+      (state) =>
+        state.selection,
     );
 
   const clipboard =
     useEditorStore(
-      (state) => state.clipboard,
+      (state) =>
+        state.clipboard,
     );
 
   /* =======================================================
@@ -67,62 +72,74 @@ export function EditorToolbar() {
 
   const setModelName =
     useEditorStore(
-      (state) => state.setModelName,
+      (state) =>
+        state.setModelName,
     );
 
   const beginTransaction =
     useEditorStore(
-      (state) => state.beginTransaction,
+      (state) =>
+        state.beginTransaction,
     );
 
   const commitTransaction =
     useEditorStore(
-      (state) => state.commitTransaction,
+      (state) =>
+        state.commitTransaction,
     );
 
   const undo =
     useEditorStore(
-      (state) => state.undo,
+      (state) =>
+        state.undo,
     );
 
   const redo =
     useEditorStore(
-      (state) => state.redo,
+      (state) =>
+        state.redo,
     );
 
   const copySelectedActors =
     useEditorStore(
-      (state) => state.copySelectedActors,
+      (state) =>
+        state.copySelectedActors,
     );
 
   const pasteClipboard =
     useEditorStore(
-      (state) => state.pasteClipboard,
+      (state) =>
+        state.pasteClipboard,
     );
 
   const duplicateSelectedActors =
     useEditorStore(
-      (state) => state.duplicateSelectedActors,
+      (state) =>
+        state.duplicateSelectedActors,
     );
 
   const deleteSelection =
     useEditorStore(
-      (state) => state.deleteSelection,
+      (state) =>
+        state.deleteSelection,
     );
 
   const saveLocal =
     useEditorStore(
-      (state) => state.saveLocal,
+      (state) =>
+        state.saveLocal,
     );
 
   const resetModel =
     useEditorStore(
-      (state) => state.resetModel,
+      (state) =>
+        state.resetModel,
     );
 
   const exportJson =
     useEditorStore(
-      (state) => state.exportJson,
+      (state) =>
+        state.exportJson,
     );
 
   /* =======================================================
@@ -132,19 +149,30 @@ export function EditorToolbar() {
   const selectedActorCount =
     selection.actorIds.length;
 
-  const selectedRelationshipCount =
-    selection.relationshipIds.length;
+  const selectedCommercialRelationshipCount =
+    selection
+      .commercialRelationshipIds
+      .length;
+
+  const selectedFlowCount =
+    selection.flowIds.length;
+
+  const selectedGatewayCount =
+    selection.gatewayIds.length;
 
   const totalSelected =
     selectedActorCount +
-    selectedRelationshipCount;
+    selectedCommercialRelationshipCount +
+    selectedFlowCount +
+    selectedGatewayCount;
 
   /**
-   * Copiar e duplicar atualmente são operações
-   * exclusivas de atores.
+   * Copiar e duplicar continuam sendo operações
+   * baseadas em atores.
    *
-   * Quando implementarmos formalmente Fluxos e Gateways,
-   * essas operações poderão ser generalizadas.
+   * Relações Comerciais e Fluxos internos entre os
+   * atores selecionados são preservados automaticamente
+   * pela Store.
    */
   const hasActorsSelected =
     selectedActorCount > 0;
@@ -204,7 +232,9 @@ export function EditorToolbar() {
 
         <input
           type="text"
-          value={model.name}
+          value={
+            model.name
+          }
           aria-label="Nome do modelo"
           placeholder="Nome do ecossistema"
           autoComplete="off"
@@ -240,8 +270,12 @@ export function EditorToolbar() {
           type="button"
           title="Desfazer (⌘/Ctrl+Z)"
           aria-label="Desfazer"
-          disabled={!canUndo}
-          onClick={undo}
+          disabled={
+            !canUndo
+          }
+          onClick={
+            undo
+          }
         >
           <Undo2
             size={17}
@@ -253,8 +287,12 @@ export function EditorToolbar() {
           type="button"
           title="Refazer (⌘/Ctrl+Shift+Z)"
           aria-label="Refazer"
-          disabled={!canRedo}
-          onClick={redo}
+          disabled={
+            !canRedo
+          }
+          onClick={
+            redo
+          }
         >
           <Redo2
             size={17}
@@ -278,11 +316,15 @@ export function EditorToolbar() {
               ? selectedActorCount === 1
                 ? 'Copiar ator (⌘/Ctrl+C)'
                 : `Copiar ${selectedActorCount} atores (⌘/Ctrl+C)`
-              : 'Selecione um ator para copiar'
+              : 'Selecione pelo menos um ator para copiar'
           }
           aria-label="Copiar atores selecionados"
-          disabled={!hasActorsSelected}
-          onClick={copySelectedActors}
+          disabled={
+            !hasActorsSelected
+          }
+          onClick={
+            copySelectedActors
+          }
         >
           <Copy
             size={17}
@@ -298,7 +340,9 @@ export function EditorToolbar() {
               : 'Nenhum ator copiado'
           }
           aria-label="Colar atores"
-          disabled={!canPaste}
+          disabled={
+            !canPaste
+          }
           onClick={() => {
             pasteClipboard();
           }}
@@ -316,11 +360,15 @@ export function EditorToolbar() {
               ? selectedActorCount === 1
                 ? 'Duplicar ator (⌘/Ctrl+D)'
                 : `Duplicar ${selectedActorCount} atores (⌘/Ctrl+D)`
-              : 'Selecione um ator para duplicar'
+              : 'Selecione pelo menos um ator para duplicar'
           }
           aria-label="Duplicar atores selecionados"
-          disabled={!hasActorsSelected}
-          onClick={duplicateSelectedActors}
+          disabled={
+            !hasActorsSelected
+          }
+          onClick={
+            duplicateSelectedActors
+          }
         >
           <Files
             size={17}
@@ -338,8 +386,12 @@ export function EditorToolbar() {
               : 'Nenhum elemento selecionado'
           }
           aria-label="Excluir elementos selecionados"
-          disabled={!canDelete}
-          onClick={deleteSelection}
+          disabled={
+            !canDelete
+          }
+          onClick={
+            deleteSelection
+          }
         >
           <Trash2
             size={17}
@@ -360,7 +412,9 @@ export function EditorToolbar() {
           type="button"
           title="Criar novo modelo"
           aria-label="Criar novo modelo"
-          onClick={resetModel}
+          onClick={
+            resetModel
+          }
         >
           <RotateCcw
             size={17}
@@ -372,7 +426,9 @@ export function EditorToolbar() {
           type="button"
           title="Exportar modelo em JSON"
           aria-label="Exportar modelo em JSON"
-          onClick={exportJson}
+          onClick={
+            exportJson
+          }
         >
           <Download
             size={17}
@@ -389,7 +445,9 @@ export function EditorToolbar() {
           className="button-primary"
           title="Salvar modelo localmente"
           onClick={() => {
-            saveLocal(false);
+            saveLocal(
+              false,
+            );
           }}
         >
           <Save

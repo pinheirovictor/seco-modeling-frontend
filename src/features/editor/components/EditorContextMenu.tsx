@@ -27,25 +27,39 @@ import {
 export type EditorContext =
   | {
       kind: 'canvas';
+
       x: number;
+
       y: number;
+
       flowPosition: Position;
     }
   | {
       kind: 'actor';
+
       x: number;
+
       y: number;
+
       actorId: string;
     }
   | {
-      kind: 'relationship';
+      kind: 'commercialRelationship';
+
       x: number;
+
       y: number;
-      relationshipId: string;
+
+      commercialRelationshipId: string;
     };
+
+/* =========================================================
+   PROPS
+   ========================================================= */
 
 interface EditorContextMenuProps {
   context: EditorContext;
+
   onClose: () => void;
 }
 
@@ -53,8 +67,11 @@ interface EditorContextMenuProps {
    CONSTANTES
    ========================================================= */
 
-const MENU_WIDTH = 278;
-const SCREEN_MARGIN = 8;
+const MENU_WIDTH =
+  278;
+
+const SCREEN_MARGIN =
+  8;
 
 /* =========================================================
    COMPONENTE
@@ -70,42 +87,50 @@ export function EditorContextMenu({
 
   const model =
     useEditorStore(
-      (state) => state.model,
+      (state) =>
+        state.model,
     );
 
   const selection =
     useEditorStore(
-      (state) => state.selection,
+      (state) =>
+        state.selection,
     );
 
   const clipboard =
     useEditorStore(
-      (state) => state.clipboard,
+      (state) =>
+        state.clipboard,
     );
 
   const addActor =
     useEditorStore(
-      (state) => state.addActor,
+      (state) =>
+        state.addActor,
     );
 
   const copySelectedActors =
     useEditorStore(
-      (state) => state.copySelectedActors,
+      (state) =>
+        state.copySelectedActors,
     );
 
   const pasteClipboard =
     useEditorStore(
-      (state) => state.pasteClipboard,
+      (state) =>
+        state.pasteClipboard,
     );
 
   const duplicateSelectedActors =
     useEditorStore(
-      (state) => state.duplicateSelectedActors,
+      (state) =>
+        state.duplicateSelectedActors,
     );
 
   const deleteSelection =
     useEditorStore(
-      (state) => state.deleteSelection,
+      (state) =>
+        state.deleteSelection,
     );
 
   /* -------------------------------------------------------
@@ -126,27 +151,43 @@ export function EditorContextMenu({
     );
 
   /* -------------------------------------------------------
+     CONTADORES DA SELEÇÃO
+     ------------------------------------------------------- */
+
+  const selectedActorCount =
+    selection.actorIds.length;
+
+  const selectedCommercialRelationshipCount =
+    selection
+      .commercialRelationshipIds
+      .length;
+
+  /* -------------------------------------------------------
      POSICIONAMENTO DO MENU
      ------------------------------------------------------- */
 
   /**
-   * O menu é reposicionado caso seja aberto próximo
-   * às bordas da janela.
+   * Altura aproximada utilizada apenas para impedir
+   * que o menu ultrapasse os limites da janela.
    */
   const estimatedHeight =
-    context.kind === 'canvas'
+    context.kind ===
+    'canvas'
       ? 455
-      : context.kind === 'actor'
+      : context.kind ===
+          'actor'
         ? 190
-        : 120;
+        : 135;
 
   const viewportWidth =
-    typeof window !== 'undefined'
+    typeof window !==
+    'undefined'
       ? window.innerWidth
       : 1280;
 
   const viewportHeight =
-    typeof window !== 'undefined'
+    typeof window !==
+    'undefined'
       ? window.innerHeight
       : 720;
 
@@ -186,17 +227,15 @@ export function EditorContextMenu({
     action: () => unknown,
   ) => {
     action();
+
     onClose();
   };
 
-  const selectedActorCount =
-    selection.actorIds.length;
-
-  const selectedRelationshipCount =
-    selection.relationshipIds.length;
-
   /**
-   * Renderiza um tipo de ator no menu do canvas.
+   * Renderiza uma opção de criação de ator.
+   *
+   * Esta função é utilizada somente quando o menu
+   * foi aberto sobre o canvas.
    */
   const renderActorOption = (
     actor: ActorTypeDefinition,
@@ -212,33 +251,33 @@ export function EditorContextMenu({
     return (
       <button
         type="button"
-        key={actor.value}
-        disabled={disabled}
+        key={
+          actor.value
+        }
+        disabled={
+          disabled
+        }
         title={
           disabled
             ? 'Já existe uma Companhia de Interesse (CoI) neste modelo.'
             : actor.description
         }
         onClick={() => {
+          if (
+            context.kind !==
+            'canvas'
+          ) {
+            return;
+          }
+
           closeAfter(() =>
             addActor(
               actor.value,
-              context.kind === 'canvas'
-                ? context.flowPosition
-                : {
-                    x: 0,
-                    y: 0,
-                  },
+              context.flowPosition,
             ),
           );
         }}
       >
-        {/*
-         * Pequena amostra da cor formal da notação.
-         *
-         * Usamos surface, pois representa a cor de
-         * preenchimento do ator SSN.
-         */}
         <span
           className="context-menu__color"
           style={{
@@ -252,26 +291,34 @@ export function EditorContextMenu({
         />
 
         <span>
-          {actor.label}
+          {
+            actor.label
+          }
         </span>
 
         <Plus
-          size={14}
+          size={
+            14
+          }
           aria-hidden="true"
         />
       </button>
     );
   };
 
-  /* =========================================================
+  /* =======================================================
      RENDER
-     ========================================================= */
+     ======================================================= */
 
   return (
     <div
       className="context-menu-layer"
-      onMouseDown={onClose}
-      onContextMenu={(event) => {
+      onMouseDown={
+        onClose
+      }
+      onContextMenu={(
+        event,
+      ) => {
         event.preventDefault();
       }}
     >
@@ -283,7 +330,9 @@ export function EditorContextMenu({
         }}
         role="menu"
         aria-label="Menu de contexto do editor"
-        onMouseDown={(event) => {
+        onMouseDown={(
+          event,
+        ) => {
           event.stopPropagation();
         }}
       >
@@ -291,7 +340,8 @@ export function EditorContextMenu({
             CANVAS
             ================================================= */}
 
-        {context.kind === 'canvas' ? (
+        {context.kind ===
+        'canvas' ? (
           <>
             <div className="context-menu__title">
               Adicionar ator SSN
@@ -331,7 +381,9 @@ export function EditorContextMenu({
 
             <button
               type="button"
-              disabled={!clipboard}
+              disabled={
+                !clipboard
+              }
               onClick={() => {
                 closeAfter(() =>
                   pasteClipboard(
@@ -341,7 +393,9 @@ export function EditorContextMenu({
               }}
             >
               <ClipboardPaste
-                size={15}
+                size={
+                  15
+                }
                 aria-hidden="true"
               />
 
@@ -360,10 +414,12 @@ export function EditorContextMenu({
             ATOR
             ================================================= */}
 
-        {context.kind === 'actor' ? (
+        {context.kind ===
+        'actor' ? (
           <>
             <div className="context-menu__title">
-              {selectedActorCount > 1
+              {selectedActorCount >
+              1
                 ? `${selectedActorCount} atores selecionados`
                 : 'Ator selecionado'}
             </div>
@@ -377,7 +433,9 @@ export function EditorContextMenu({
               }}
             >
               <Copy
-                size={15}
+                size={
+                  15
+                }
                 aria-hidden="true"
               />
 
@@ -399,7 +457,9 @@ export function EditorContextMenu({
               }}
             >
               <Files
-                size={15}
+                size={
+                  15
+                }
                 aria-hidden="true"
               />
 
@@ -424,12 +484,15 @@ export function EditorContextMenu({
               }}
             >
               <Trash2
-                size={15}
+                size={
+                  15
+                }
                 aria-hidden="true"
               />
 
               <span>
-                {selectedActorCount > 1
+                {selectedActorCount >
+                1
                   ? 'Excluir atores'
                   : 'Excluir ator'}
               </span>
@@ -442,23 +505,27 @@ export function EditorContextMenu({
         ) : null}
 
         {/* =================================================
-            RELAÇÃO PROVISÓRIA
+            RELAÇÃO COMERCIAL
             ================================================= */}
 
-        {context.kind === 'relationship' ? (
+        {context.kind ===
+        'commercialRelationship' ? (
           <>
             <div className="context-menu__title">
-              {selectedRelationshipCount > 1
-                ? `${selectedRelationshipCount} relações selecionadas`
-                : 'Relação selecionada'}
+              {selectedCommercialRelationshipCount >
+              1
+                ? `${selectedCommercialRelationshipCount} relações comerciais selecionadas`
+                : 'Relação Comercial'}
             </div>
 
-            {/*
-             * Esta opção pertence à estrutura provisória.
-             *
-             * Quando implementarmos Relação Comercial,
-             * Fluxo e Gateways, este menu será revisado.
-             */}
+            <div className="context-menu__hint">
+              Os Fluxos desta relação podem ser
+              adicionados e editados pelo painel de
+              propriedades.
+            </div>
+
+            <div className="context-menu__separator" />
+
             <button
               type="button"
               className="context-menu__danger"
@@ -469,14 +536,17 @@ export function EditorContextMenu({
               }}
             >
               <Trash2
-                size={15}
+                size={
+                  15
+                }
                 aria-hidden="true"
               />
 
               <span>
-                {selectedRelationshipCount > 1
-                  ? 'Excluir relações'
-                  : 'Excluir relação'}
+                {selectedCommercialRelationshipCount >
+                1
+                  ? 'Excluir relações comerciais'
+                  : 'Excluir Relação Comercial'}
               </span>
 
               <kbd>

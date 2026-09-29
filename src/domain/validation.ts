@@ -1,14 +1,16 @@
 import type {
   Actor,
+  CommercialRelationship,
   EcosystemModel,
+  Flow,
 } from './model';
 
 /* =========================================================
-   NORMALIZAÇÃO
+   NORMALIZAÇÃO DE NOMES
    ========================================================= */
 
 /**
- * Normaliza um nome de ator para fins de comparação.
+ * Normaliza um nome de ator para comparação.
  *
  * Exemplos:
  *
@@ -16,13 +18,7 @@ import type {
  * "amazon web services"
  * "AMAZON WEB SERVICES"
  *
- * são considerados o mesmo nome.
- *
- * A função:
- * - normaliza caracteres Unicode;
- * - remove espaços extras;
- * - remove espaços nas extremidades;
- * - ignora diferenças entre maiúsculas e minúsculas.
+ * são considerados equivalentes.
  */
 export function normalizeActorName(
   name: string,
@@ -35,41 +31,24 @@ export function normalizeActorName(
 }
 
 /* =========================================================
-   NOME OBRIGATÓRIO
+   NOMES OBRIGATÓRIOS
    ========================================================= */
 
-/**
- * Verifica se o nome informado pode ser considerado vazio.
- */
 export function isActorNameEmpty(
   name: string,
 ): boolean {
-  return (
-    normalizeActorName(name) === ''
-  );
+  return normalizeActorName(name) === '';
 }
 
-/**
- * Retorna os IDs dos atores sem nome.
- *
- * Esta validação será utilizada posteriormente pelo
- * mecanismo de qualidade da ECOS Modeling.
- */
 export function getUnnamedActorIds(
   model: EcosystemModel,
 ): Set<string> {
   return new Set(
     model.actors
-      .filter(
-        (actor) =>
-          isActorNameEmpty(
-            actor.name,
-          ),
+      .filter((actor) =>
+        isActorNameEmpty(actor.name),
       )
-      .map(
-        (actor) =>
-          actor.id,
-      ),
+      .map((actor) => actor.id),
   );
 }
 
@@ -77,23 +56,13 @@ export function getUnnamedActorIds(
    NOMES DUPLICADOS
    ========================================================= */
 
-/**
- * Verifica se determinado ator possui o mesmo nome
- * de outro ator do modelo.
- *
- * A comparação não diferencia:
- * - letras maiúsculas/minúsculas;
- * - espaços duplicados;
- * - espaços nas extremidades.
- */
 export function actorHasDuplicateName(
   model: EcosystemModel,
   actorId: string,
 ): boolean {
   const actor =
     model.actors.find(
-      (item) =>
-        item.id === actorId,
+      (item) => item.id === actorId,
     );
 
   if (!actor) {
@@ -101,16 +70,8 @@ export function actorHasDuplicateName(
   }
 
   const normalized =
-    normalizeActorName(
-      actor.name,
-    );
+    normalizeActorName(actor.name);
 
-  /**
-   * Ator sem nome não é tratado aqui como duplicado.
-   *
-   * Nome obrigatório constitui uma regra de validação
-   * diferente.
-   */
   if (!normalized) {
     return false;
   }
@@ -118,37 +79,19 @@ export function actorHasDuplicateName(
   return model.actors.some(
     (item) =>
       item.id !== actor.id &&
-      normalizeActorName(
-        item.name,
-      ) === normalized,
+      normalizeActorName(item.name) === normalized,
   );
 }
 
-/**
- * Recupera todos os atores que possuem nomes duplicados.
- *
- * Exemplo:
- *
- * Cliente A
- * Cliente A
- * Fornecedor B
- *
- * Os dois primeiros atores são retornados.
- */
 export function getDuplicateActorIds(
   model: EcosystemModel,
 ): Set<string> {
   const counts =
     new Map<string, number>();
 
-  for (
-    const actor
-    of model.actors
-  ) {
+  for (const actor of model.actors) {
     const normalized =
-      normalizeActorName(
-        actor.name,
-      );
+      normalizeActorName(actor.name);
 
     if (!normalized) {
       continue;
@@ -156,11 +99,7 @@ export function getDuplicateActorIds(
 
     counts.set(
       normalized,
-      (
-        counts.get(
-          normalized,
-        ) ?? 0
-      ) + 1,
+      (counts.get(normalized) ?? 0) + 1,
     );
   }
 
@@ -168,42 +107,22 @@ export function getDuplicateActorIds(
     model.actors
       .filter((actor) => {
         const normalized =
-          normalizeActorName(
-            actor.name,
-          );
-
-        if (!normalized) {
-          return false;
-        }
+          normalizeActorName(actor.name);
 
         return (
-          (
-            counts.get(
-              normalized,
-            ) ?? 0
-          ) > 1
+          normalized !== '' &&
+          (counts.get(normalized) ?? 0) > 1
         );
       })
-      .map(
-        (actor) =>
-          actor.id,
-      ),
+      .map((actor) => actor.id),
   );
 }
 
-/**
- * Verifica se todos os nomes preenchidos são únicos.
- *
- * Atores sem nome não são tratados nesta função,
- * pois "nome ausente" é uma regra independente.
- */
 export function validateUniqueActorNames(
   model: EcosystemModel,
 ): boolean {
   return (
-    getDuplicateActorIds(
-      model,
-    ).size === 0
+    getDuplicateActorIds(model).size === 0
   );
 }
 
@@ -211,23 +130,6 @@ export function validateUniqueActorNames(
    GERAÇÃO DE NOMES ÚNICOS
    ========================================================= */
 
-/**
- * Gera um nome que não conflita com os atores existentes.
- *
- * Exemplos:
- *
- * Fornecedor
- *
- * caso já exista:
- *
- * Fornecedor 2
- *
- * caso também exista:
- *
- * Fornecedor 3
- *
- * ignoredActorId é útil durante edição/renomeação.
- */
 export function uniqueActorName(
   preferredName: string,
   actors: Actor[],
@@ -245,24 +147,17 @@ export function uniqueActorName(
       actors
         .filter(
           (actor) =>
-            actor.id !==
-            ignoredActorId,
+            actor.id !== ignoredActorId,
         )
-        .map(
-          (actor) =>
-            normalizeActorName(
-              actor.name,
-            ),
+        .map((actor) =>
+          normalizeActorName(actor.name),
         )
         .filter(Boolean),
     );
 
-  const normalizedBase =
-    normalizeActorName(base);
-
   if (
     !used.has(
-      normalizedBase,
+      normalizeActorName(base),
     )
   ) {
     return base;
@@ -287,10 +182,6 @@ export function uniqueActorName(
    COMPANHIA DE INTERESSE
    ========================================================= */
 
-/**
- * Retorna a quantidade de Companhias de Interesse
- * presentes no modelo.
- */
 export function countCompaniesOfInterest(
   model: EcosystemModel,
 ): number {
@@ -302,91 +193,650 @@ export function countCompaniesOfInterest(
 }
 
 /**
- * Verifica a regra estrutural atualmente adotada pela
- * ECOS Modeling:
+ * Durante a edição:
  *
- * um modelo pode possuir no máximo uma
- * Companhia de Interesse (CoI).
- *
- * IMPORTANTE:
- *
- * "no máximo uma" é diferente de "exatamente uma".
- *
- * Durante a edição é permitido existir temporariamente
- * um modelo sem CoI.
- *
- * Futuramente, no processo de publicação/validação final,
- * podemos estabelecer que um modelo SSN válido deve possuir
- * exatamente uma Companhia de Interesse.
+ * 0 CoI -> permitido
+ * 1 CoI -> permitido
+ * 2+    -> inválido
  */
 export function validateCompanyOfInterest(
   model: EcosystemModel,
 ): boolean {
   return (
-    countCompaniesOfInterest(
-      model,
-    ) <= 1
+    countCompaniesOfInterest(model) <= 1
   );
 }
 
 /**
- * Verifica se o modelo possui uma Companhia de Interesse.
- *
- * Esta função será útil posteriormente para validação
- * de completude/publicação.
+ * Utilizado posteriormente para validação final,
+ * publicação ou completude.
  */
 export function hasCompanyOfInterest(
   model: EcosystemModel,
 ): boolean {
   return (
-    countCompaniesOfInterest(
-      model,
-    ) === 1
+    countCompaniesOfInterest(model) === 1
   );
 }
 
 /* =========================================================
-   VALIDAÇÕES BÁSICAS DOS ATORES
+   VALIDAÇÕES DOS ATORES
    ========================================================= */
 
-/**
- * Verifica se todos os atores possuem nome.
- */
 export function validateActorNamesRequired(
   model: EcosystemModel,
 ): boolean {
   return model.actors.every(
     (actor) =>
-      !isActorNameEmpty(
-        actor.name,
-      ),
+      !isActorNameEmpty(actor.name),
   );
 }
 
-/**
- * Validação estrutural básica dos atores.
- *
- * Esta função não representa ainda toda a validação SSN.
- * Ela apenas concentra as regras já definidas nesta etapa.
- *
- * Atualmente:
- *
- * - no máximo uma Companhia de Interesse;
- * - nomes obrigatórios;
- * - nomes únicos.
- */
 export function validateActors(
   model: EcosystemModel,
 ): boolean {
   return (
-    validateCompanyOfInterest(
-      model,
-    ) &&
-    validateActorNamesRequired(
-      model,
-    ) &&
-    validateUniqueActorNames(
-      model,
+    validateCompanyOfInterest(model) &&
+    validateActorNamesRequired(model) &&
+    validateUniqueActorNames(model)
+  );
+}
+
+/* =========================================================
+   HELPERS DE ATORES
+   ========================================================= */
+
+export function actorExists(
+  model: EcosystemModel,
+  actorId: string,
+): boolean {
+  return model.actors.some(
+    (actor) =>
+      actor.id === actorId,
+  );
+}
+
+/* =========================================================
+   RELAÇÃO COMERCIAL
+   ========================================================= */
+
+/**
+ * Localiza uma Relação Comercial.
+ */
+export function getCommercialRelationship(
+  model: EcosystemModel,
+  relationshipId: string,
+): CommercialRelationship | undefined {
+  return model.commercialRelationships.find(
+    (relationship) =>
+      relationship.id === relationshipId,
+  );
+}
+
+/**
+ * Verifica se determinado ator participa da relação.
+ */
+export function commercialRelationshipContainsActor(
+  relationship: CommercialRelationship,
+  actorId: string,
+): boolean {
+  return (
+    relationship.actorAId === actorId ||
+    relationship.actorBId === actorId
+  );
+}
+
+/**
+ * Retorna o outro participante da Relação Comercial.
+ */
+export function getOtherActorId(
+  relationship: CommercialRelationship,
+  actorId: string,
+): string | null {
+  if (
+    relationship.actorAId === actorId
+  ) {
+    return relationship.actorBId;
+  }
+
+  if (
+    relationship.actorBId === actorId
+  ) {
+    return relationship.actorAId;
+  }
+
+  return null;
+}
+
+/**
+ * Compara duas relações sem considerar direção.
+ *
+ * A-B é equivalente a B-A.
+ */
+export function sameCommercialRelationshipActors(
+  first: CommercialRelationship,
+  second: CommercialRelationship,
+): boolean {
+  return (
+    (
+      first.actorAId === second.actorAId &&
+      first.actorBId === second.actorBId
+    ) ||
+    (
+      first.actorAId === second.actorBId &&
+      first.actorBId === second.actorAId
     )
+  );
+}
+
+/**
+ * Verifica se já existe uma Relação Comercial entre
+ * dois atores.
+ *
+ * Como Relação Comercial não possui direção:
+ *
+ * A-B
+ *
+ * e:
+ *
+ * B-A
+ *
+ * são consideradas a mesma relação.
+ */
+export function commercialRelationshipExistsBetween(
+  model: EcosystemModel,
+  actorAId: string,
+  actorBId: string,
+  ignoredRelationshipId?: string,
+): boolean {
+  return model.commercialRelationships.some(
+    (relationship) => {
+      if (
+        relationship.id ===
+        ignoredRelationshipId
+      ) {
+        return false;
+      }
+
+      return (
+        (
+          relationship.actorAId === actorAId &&
+          relationship.actorBId === actorBId
+        ) ||
+        (
+          relationship.actorAId === actorBId &&
+          relationship.actorBId === actorAId
+        )
+      );
+    },
+  );
+}
+
+/**
+ * Uma Relação Comercial estruturalmente válida:
+ *
+ * - conecta dois atores existentes;
+ * - conecta atores diferentes.
+ */
+export function isCommercialRelationshipValid(
+  model: EcosystemModel,
+  relationship: CommercialRelationship,
+): boolean {
+  if (
+    relationship.actorAId ===
+    relationship.actorBId
+  ) {
+    return false;
+  }
+
+  if (
+    !actorExists(
+      model,
+      relationship.actorAId,
+    )
+  ) {
+    return false;
+  }
+
+  if (
+    !actorExists(
+      model,
+      relationship.actorBId,
+    )
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Relações duplicadas também são inválidas.
+ */
+export function getDuplicateCommercialRelationshipIds(
+  model: EcosystemModel,
+): Set<string> {
+  const duplicated =
+    new Set<string>();
+
+  for (
+    let i = 0;
+    i <
+    model.commercialRelationships.length;
+    i += 1
+  ) {
+    const first =
+      model.commercialRelationships[i];
+
+    for (
+      let j = i + 1;
+      j <
+      model.commercialRelationships.length;
+      j += 1
+    ) {
+      const second =
+        model.commercialRelationships[j];
+
+      if (
+        sameCommercialRelationshipActors(
+          first,
+          second,
+        )
+      ) {
+        duplicated.add(first.id);
+        duplicated.add(second.id);
+      }
+    }
+  }
+
+  return duplicated;
+}
+
+/**
+ * Recupera todas as relações estruturalmente inválidas.
+ */
+export function getInvalidCommercialRelationshipIds(
+  model: EcosystemModel,
+): Set<string> {
+  const invalid =
+    new Set<string>();
+
+  for (
+    const relationship
+    of model.commercialRelationships
+  ) {
+    if (
+      !isCommercialRelationshipValid(
+        model,
+        relationship,
+      )
+    ) {
+      invalid.add(
+        relationship.id,
+      );
+    }
+  }
+
+  for (
+    const id
+    of getDuplicateCommercialRelationshipIds(model)
+  ) {
+    invalid.add(id);
+  }
+
+  return invalid;
+}
+
+export function validateCommercialRelationships(
+  model: EcosystemModel,
+): boolean {
+  return (
+    getInvalidCommercialRelationshipIds(model)
+      .size === 0
+  );
+}
+
+/* =========================================================
+   RELAÇÕES SEM FLUXO
+   ========================================================= */
+
+/**
+ * Durante a edição é permitido criar primeiro a Relação
+ * Comercial e adicionar o Fluxo depois.
+ *
+ * Por isso, ausência de Fluxo não é tratada como erro
+ * estrutural imediato.
+ *
+ * Essa função será útil para validação de qualidade,
+ * completude ou publicação.
+ */
+export function getCommercialRelationshipsWithoutFlows(
+  model: EcosystemModel,
+): Set<string> {
+  const usedRelationshipIds =
+    new Set(
+      model.flows.map(
+        (flow) =>
+          flow.commercialRelationshipId,
+      ),
+    );
+
+  return new Set(
+    model.commercialRelationships
+      .filter(
+        (relationship) =>
+          !usedRelationshipIds.has(
+            relationship.id,
+          ),
+      )
+      .map(
+        (relationship) =>
+          relationship.id,
+      ),
+  );
+}
+
+export function validateCommercialRelationshipsHaveFlows(
+  model: EcosystemModel,
+): boolean {
+  return (
+    getCommercialRelationshipsWithoutFlows(
+      model,
+    ).size === 0
+  );
+}
+
+/* =========================================================
+   FLUXOS
+   ========================================================= */
+
+/**
+ * Um identificador de Fluxo deve ser inteiro e positivo.
+ */
+export function isValidFlowIdentifier(
+  identifier: number,
+): boolean {
+  return (
+    Number.isInteger(identifier) &&
+    identifier > 0
+  );
+}
+
+/**
+ * Verifica se os atores de origem e destino do Fluxo são
+ * exatamente os dois participantes da Relação Comercial.
+ *
+ * São aceitos:
+ *
+ * A -> B
+ *
+ * ou:
+ *
+ * B -> A
+ *
+ * Não são aceitos:
+ *
+ * A -> C
+ * C -> B
+ * A -> A
+ */
+export function flowMatchesCommercialRelationship(
+  model: EcosystemModel,
+  flow: Flow,
+): boolean {
+  const relationship =
+    getCommercialRelationship(
+      model,
+      flow.commercialRelationshipId,
+    );
+
+  if (!relationship) {
+    return false;
+  }
+
+  if (
+    flow.sourceActorId ===
+    flow.targetActorId
+  ) {
+    return false;
+  }
+
+  const direct =
+    relationship.actorAId ===
+      flow.sourceActorId &&
+    relationship.actorBId ===
+      flow.targetActorId;
+
+  const reverse =
+    relationship.actorAId ===
+      flow.targetActorId &&
+    relationship.actorBId ===
+      flow.sourceActorId;
+
+  return (
+    direct ||
+    reverse
+  );
+}
+
+/**
+ * Validação estrutural básica de um Fluxo.
+ */
+export function isFlowValid(
+  model: EcosystemModel,
+  flow: Flow,
+): boolean {
+  if (
+    !isValidFlowIdentifier(
+      flow.identifier,
+    )
+  ) {
+    return false;
+  }
+
+  if (
+    !actorExists(
+      model,
+      flow.sourceActorId,
+    )
+  ) {
+    return false;
+  }
+
+  if (
+    !actorExists(
+      model,
+      flow.targetActorId,
+    )
+  ) {
+    return false;
+  }
+
+  return (
+    flowMatchesCommercialRelationship(
+      model,
+      flow,
+    )
+  );
+}
+
+/* =========================================================
+   CÓDIGOS DE FLUXO DUPLICADOS
+   ========================================================= */
+
+/**
+ * A combinação:
+ *
+ * tipo + identificador
+ *
+ * deve ser única no modelo.
+ *
+ * Exemplos:
+ *
+ * P.1
+ * P.2
+ * S.1
+ *
+ * são válidos.
+ *
+ * Dois P.1 no mesmo modelo são considerados duplicados.
+ */
+export function getDuplicateFlowIds(
+  model: EcosystemModel,
+): Set<string> {
+  const groups =
+    new Map<string, string[]>();
+
+  for (
+    const flow
+    of model.flows
+  ) {
+    const key =
+      `${flow.type}:${flow.identifier}`;
+
+    const ids =
+      groups.get(key) ?? [];
+
+    ids.push(flow.id);
+
+    groups.set(
+      key,
+      ids,
+    );
+  }
+
+  const duplicated =
+    new Set<string>();
+
+  for (
+    const ids
+    of groups.values()
+  ) {
+    if (
+      ids.length <= 1
+    ) {
+      continue;
+    }
+
+    for (
+      const id
+      of ids
+    ) {
+      duplicated.add(id);
+    }
+  }
+
+  return duplicated;
+}
+
+/**
+ * Recupera Fluxos estruturalmente inválidos.
+ */
+export function getInvalidFlowIds(
+  model: EcosystemModel,
+): Set<string> {
+  const invalid =
+    new Set<string>();
+
+  for (
+    const flow
+    of model.flows
+  ) {
+    if (
+      !isFlowValid(
+        model,
+        flow,
+      )
+    ) {
+      invalid.add(
+        flow.id,
+      );
+    }
+  }
+
+  for (
+    const id
+    of getDuplicateFlowIds(model)
+  ) {
+    invalid.add(id);
+  }
+
+  return invalid;
+}
+
+export function validateFlows(
+  model: EcosystemModel,
+): boolean {
+  return (
+    getInvalidFlowIds(model).size === 0
+  );
+}
+
+/* =========================================================
+   MODELO SSN — VALIDAÇÃO ESTRUTURAL
+   ========================================================= */
+
+/**
+ * Validação estrutural atualmente suportada pela
+ * ECOS Modeling.
+ *
+ * Verifica:
+ *
+ * Atores:
+ * - no máximo uma CoI;
+ * - nomes preenchidos;
+ * - nomes únicos.
+ *
+ * Relações Comerciais:
+ * - atores existentes;
+ * - atores diferentes;
+ * - ausência de relações duplicadas.
+ *
+ * Fluxos:
+ * - Relação Comercial existente;
+ * - origem e destino pertencem à relação;
+ * - origem e destino diferentes;
+ * - identificador positivo;
+ * - código do Fluxo não duplicado.
+ *
+ * Uma Relação Comercial ainda pode ficar temporariamente
+ * sem Fluxo durante a edição.
+ */
+export function validateModelStructure(
+  model: EcosystemModel,
+): boolean {
+  return (
+    validateActors(model) &&
+    validateCommercialRelationships(model) &&
+    validateFlows(model)
+  );
+}
+
+/* =========================================================
+   MODELO SSN — VALIDAÇÃO DE COMPLETUDE
+   ========================================================= */
+
+/**
+ * Validação mais restritiva.
+ *
+ * Além da integridade estrutural:
+ *
+ * - exige exatamente uma Companhia de Interesse;
+ * - exige pelo menos um Fluxo em cada Relação Comercial.
+ *
+ * Esta função será útil futuramente para:
+ *
+ * - publicação;
+ * - relatório de qualidade;
+ * - índice de completude;
+ * - validação final.
+ */
+export function validateModelCompleteness(
+  model: EcosystemModel,
+): boolean {
+  return (
+    validateModelStructure(model) &&
+    hasCompanyOfInterest(model) &&
+    validateCommercialRelationshipsHaveFlows(model)
   );
 }
