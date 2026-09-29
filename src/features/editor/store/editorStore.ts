@@ -8,9 +8,12 @@ import {
 
 import {
   createActor,
+  createAnnotation,
   createCommercialRelationship,
   createEmptyModel,
+  createEmptySecoGuideData,
   createFlow,
+  createModelReference,
   nextFlowIdentifier,
 } from '../../../domain/factory';
 
@@ -18,6 +21,7 @@ import {
   MODEL_SCHEMA_VERSION,
   type Actor,
   type ActorType,
+  type Annotation,
   type CommercialRelationship,
   type EcosystemModel,
   type EditorNotice,
@@ -25,7 +29,9 @@ import {
   type Flow,
   type FlowType,
   type Gateway,
+  type ModelReference,
   type Position,
+  type SecoGuideData,
 } from '../../../domain/model';
 
 import {
@@ -51,7 +57,22 @@ const EMPTY_SELECTION: EditorSelection = {
   commercialRelationshipIds: [],
   flowIds: [],
   gatewayIds: [],
+  annotationIds: [],
 };
+
+/* =========================================================
+   TIPOS AUXILIARES
+   ========================================================= */
+
+type ModelMetadataPatch =
+  Partial<
+    Pick<
+      EcosystemModel,
+      | 'description'
+      | 'domain'
+      | 'keywords'
+    >
+  >;
 
 /* =========================================================
    CLIPBOARD
@@ -63,12 +84,13 @@ const EMPTY_SELECTION: EditorSelection = {
  * - Relações Comerciais internas à seleção;
  * - Fluxos pertencentes a essas relações.
  *
- * Gateways ainda não são copiados nesta etapa.
+ * Gateways e anotações não são copiados nesta etapa.
  */
 interface ActorClipboard {
   actors: Actor[];
 
-  commercialRelationships: CommercialRelationship[];
+  commercialRelationships:
+    CommercialRelationship[];
 
   flows: Flow[];
 
@@ -186,6 +208,22 @@ function unique(
   ];
 }
 
+function asString(
+  value: unknown,
+): string {
+  return typeof value === 'string'
+    ? value
+    : '';
+}
+
+function asBoolean(
+  value: unknown,
+): boolean {
+  return typeof value === 'boolean'
+    ? value
+    : false;
+}
+
 /* =========================================================
    COMPANHIA DE INTERESSE
    ========================================================= */
@@ -276,6 +314,20 @@ function gatewayExists(
   return model.gateways.some(
     (gateway) =>
       gateway.id === gatewayId,
+  );
+}
+
+/* =========================================================
+   ANOTAÇÕES
+   ========================================================= */
+
+function annotationExists(
+  model: EcosystemModel,
+  annotationId: string,
+): boolean {
+  return model.annotations.some(
+    (annotation) =>
+      annotation.id === annotationId,
   );
 }
 
@@ -542,10 +594,6 @@ function pasteActors(
         source.actorBId,
       );
 
-    /**
-     * Caso algum ator tenha sido ignorado,
-     * como a CoI, esta relação também não é copiada.
-     */
     if (
       !actorAId ||
       !actorBId
@@ -605,12 +653,6 @@ function pasteActors(
       continue;
     }
 
-    /**
-     * A numeração precisa considerar:
-     *
-     * - Fluxos já existentes no modelo;
-     * - Fluxos criados nesta mesma operação.
-     */
     const identifier =
       nextFlowIdentifier(
         source.type,
@@ -681,175 +723,7 @@ function pasteActors(
 }
 
 /* =========================================================
-   MIGRAÇÃO DO MODELO ANTIGO
-   ========================================================= */
-
-function isLegacyRelationship(
-  value: unknown,
-): value is LegacyRelationship {
-  if (
-    !value ||
-    typeof value !==
-      'object'
-  ) {
-    return false;
-  }
-
-  const candidate =
-    value as Partial<
-      LegacyRelationship
-    >;
-
-  return (
-    typeof candidate.id ===
-      'string' &&
-    typeof candidate.sourceActorId ===
-      'string' &&
-    typeof candidate.targetActorId ===
-      'string' &&
-    (
-      candidate.type ===
-        'product' ||
-      candidate.type ===
-        'service' ||
-      candidate.type ===
-        'financial' ||
-      candidate.type ===
-        'information'
-    )
-  );
-}
-
-function isLegacyModel(
-  value: unknown,
-): value is LegacyModel {
-  if (
-    !value ||
-    typeof value !==
-      'object'
-  ) {
-    return false;
-  }
-
-  const candidate =
-    value as Partial<
-      LegacyModel
-    >;
-
-  return (
-    Array.isArray(
-      candidate.actors,
-    ) &&
-    Array.isArray(
-      candidate.relationships,
-    ) &&
-    candidate.relationships.every(
-      isLegacyRelationship,
-    )
-  );
-}
-
-/**
- * Migra automaticamente o modelo utilizado na versão
- * anterior deste frontend.
- *
- * Cada Relationship antigo se transforma em:
- *
- * 1 Relação Comercial
- * +
- * 1 Fluxo
- */
-function migrateLegacyModel(
-  legacy: LegacyModel,
-): EcosystemModel {
-  const commercialRelationships:
-    CommercialRelationship[] =
-      [];
-
-  const flows:
-    Flow[] = [];
-
-  for (
-    const oldRelationship
-    of legacy.relationships
-  ) {
-    const relationship =
-      createCommercialRelationship(
-        oldRelationship.sourceActorId,
-        oldRelationship.targetActorId,
-      );
-
-    relationship.description =
-      oldRelationship.description ??
-      '';
-
-    commercialRelationships.push(
-      relationship,
-    );
-
-    const flowType: FlowType =
-      oldRelationship.type ===
-      'information'
-        ? 'content'
-        : oldRelationship.type;
-
-    const flow =
-      createFlow(
-        relationship.id,
-        oldRelationship.sourceActorId,
-        oldRelationship.targetActorId,
-        flowType,
-        flows,
-      );
-
-    flow.name =
-      oldRelationship.name ??
-      '';
-
-    flow.description =
-      oldRelationship.description ??
-      '';
-
-    flows.push(
-      flow,
-    );
-  }
-
-  return {
-    schemaVersion:
-      MODEL_SCHEMA_VERSION,
-
-    id:
-      legacy.id ||
-      crypto.randomUUID(),
-
-    name:
-      legacy.name ||
-      'Meu Ecossistema',
-
-    description:
-      legacy.description ||
-      '',
-
-    actors:
-      structuredClone(
-        legacy.actors,
-      ),
-
-    commercialRelationships,
-
-    flows,
-
-    gateways:
-      [],
-
-    updatedAt:
-      new Date().toISOString(),
-  };
-}
-
-/* =========================================================
-   VALIDAÇÃO DE PERSISTÊNCIA
+   VALIDAÇÃO DOS DADOS ARMAZENADOS
    ========================================================= */
 
 function isValidStoredActor(
@@ -980,9 +854,486 @@ function isValidStoredGateway(
   );
 }
 
-function isCurrentModel(
+/* =========================================================
+   NORMALIZAÇÃO DE REFERÊNCIAS
+   ========================================================= */
+
+function normalizeReferences(
   value: unknown,
-): value is EcosystemModel {
+): ModelReference[] {
+  if (
+    !Array.isArray(value)
+  ) {
+    return [];
+  }
+
+  return value
+    .map(
+      (item) => {
+        if (
+          !item ||
+          typeof item !==
+            'object'
+        ) {
+          return null;
+        }
+
+        const candidate =
+          item as Partial<
+            ModelReference
+          >;
+
+        if (
+          typeof candidate.text !==
+            'string'
+        ) {
+          return null;
+        }
+
+        const reference:
+          ModelReference = {
+            id:
+              typeof candidate.id ===
+                'string' &&
+              candidate.id
+                .trim()
+                .length > 0
+                ? candidate.id
+                : crypto.randomUUID(),
+
+            text:
+              candidate.text,
+          };
+
+        if (
+          typeof candidate.url ===
+            'string' &&
+          candidate.url.trim()
+        ) {
+          reference.url =
+            candidate.url;
+        }
+
+        return reference;
+      },
+    )
+    .filter(
+      (
+        item,
+      ): item is ModelReference =>
+        item !== null,
+    );
+}
+
+/* =========================================================
+   NORMALIZAÇÃO DE ANOTAÇÕES
+   ========================================================= */
+
+function normalizeAnnotations(
+  value: unknown,
+): Annotation[] {
+  if (
+    !Array.isArray(value)
+  ) {
+    return [];
+  }
+
+  return value
+    .map(
+      (item) => {
+        if (
+          !item ||
+          typeof item !==
+            'object'
+        ) {
+          return null;
+        }
+
+        const candidate =
+          item as Partial<
+            Annotation
+          >;
+
+        if (
+          typeof candidate.text !==
+            'string' ||
+          !candidate.position ||
+          typeof candidate.position.x !==
+            'number' ||
+          typeof candidate.position.y !==
+            'number'
+        ) {
+          return null;
+        }
+
+        return {
+          id:
+            typeof candidate.id ===
+              'string' &&
+            candidate.id
+              .trim()
+              .length > 0
+              ? candidate.id
+              : crypto.randomUUID(),
+
+          text:
+            candidate.text,
+
+          position: {
+            x:
+              candidate.position.x,
+
+            y:
+              candidate.position.y,
+          },
+        };
+      },
+    )
+    .filter(
+      (
+        item,
+      ): item is Annotation =>
+        item !== null,
+    );
+}
+
+/* =========================================================
+   NORMALIZAÇÃO DO SECO-GUIDE
+   ========================================================= */
+
+/**
+ * Normaliza os dados do SECO-Guide.
+ *
+ * Isso é necessário porque modelos salvos antes do M1
+ * ainda não possuem essa estrutura.
+ */
+function normalizeSecoGuideData(
+  value: unknown,
+): SecoGuideData {
+  const fallback =
+    createEmptySecoGuideData();
+
+  if (
+    !value ||
+    typeof value !==
+      'object'
+  ) {
+    return fallback;
+  }
+
+  const candidate =
+    value as Partial<
+      SecoGuideData
+    >;
+
+  return {
+    scope: {
+      purpose:
+        asString(
+          candidate.scope
+            ?.purpose,
+        ),
+
+      boundaries:
+        asString(
+          candidate.scope
+            ?.boundaries,
+        ),
+
+      objectives:
+        asString(
+          candidate.scope
+            ?.objectives,
+        ),
+    },
+
+    directActors: {
+      notes:
+        asString(
+          candidate.directActors
+            ?.notes,
+        ),
+    },
+
+    intermediaryActors: {
+      notes:
+        asString(
+          candidate.intermediaryActors
+            ?.notes,
+        ),
+
+      reviewed:
+        asBoolean(
+          candidate.intermediaryActors
+            ?.reviewed,
+        ),
+    },
+
+    relationships: {
+      notes:
+        asString(
+          candidate.relationships
+            ?.notes,
+        ),
+    },
+
+    valueFlows: {
+      notes:
+        asString(
+          candidate.valueFlows
+            ?.notes,
+        ),
+    },
+
+    diagram: {
+      organizationCriteria:
+        asString(
+          candidate.diagram
+            ?.organizationCriteria,
+        ),
+
+      notes:
+        asString(
+          candidate.diagram
+            ?.notes,
+        ),
+
+      visuallyReviewed:
+        asBoolean(
+          candidate.diagram
+            ?.visuallyReviewed,
+        ),
+    },
+
+    review: {
+      reviewedPoints:
+        asString(
+          candidate.review
+            ?.reviewedPoints,
+        ),
+
+      pendingIssues:
+        asString(
+          candidate.review
+            ?.pendingIssues,
+        ),
+
+      completed:
+        asBoolean(
+          candidate.review
+            ?.completed,
+        ),
+    },
+  };
+}
+
+/* =========================================================
+   NORMALIZAÇÃO DO MODELO 4.0
+   ========================================================= */
+
+/**
+ * Aceita tanto:
+ *
+ * - o modelo M1 atual;
+ * - o modelo 4.0 salvo antes do M1.
+ *
+ * Os novos campos são preenchidos automaticamente quando
+ * ainda não existem no rascunho armazenado.
+ */
+function normalizeCurrentModel(
+  value: unknown,
+): EcosystemModel | null {
+  if (
+    !value ||
+    typeof value !==
+      'object'
+  ) {
+    return null;
+  }
+
+  const candidate =
+    value as Partial<
+      EcosystemModel
+    >;
+
+  if (
+    candidate.schemaVersion !==
+      MODEL_SCHEMA_VERSION ||
+    typeof candidate.id !==
+      'string' ||
+    typeof candidate.name !==
+      'string' ||
+    typeof candidate.description !==
+      'string' ||
+    !Array.isArray(
+      candidate.actors,
+    ) ||
+    !candidate.actors.every(
+      isValidStoredActor,
+    ) ||
+    !Array.isArray(
+      candidate.commercialRelationships,
+    ) ||
+    !candidate.commercialRelationships.every(
+      isValidStoredCommercialRelationship,
+    ) ||
+    !Array.isArray(
+      candidate.flows,
+    ) ||
+    !candidate.flows.every(
+      isValidStoredFlow,
+    )
+  ) {
+    return null;
+  }
+
+  const gateways =
+    Array.isArray(
+      candidate.gateways,
+    )
+      ? candidate.gateways
+      : [];
+
+  if (
+    !gateways.every(
+      isValidStoredGateway,
+    )
+  ) {
+    return null;
+  }
+
+  const keywords =
+    Array.isArray(
+      candidate.keywords,
+    )
+      ? unique(
+          candidate.keywords.filter(
+            (
+              keyword,
+            ): keyword is string =>
+              typeof keyword ===
+              'string',
+          ),
+        )
+      : [];
+
+  return {
+    schemaVersion:
+      MODEL_SCHEMA_VERSION,
+
+    id:
+      candidate.id,
+
+    name:
+      candidate.name,
+
+    description:
+      candidate.description,
+
+    domain:
+      typeof candidate.domain ===
+        'string'
+        ? candidate.domain
+        : '',
+
+    keywords,
+
+    references:
+      normalizeReferences(
+        candidate.references,
+      ),
+
+    actors:
+      structuredClone(
+        candidate.actors,
+      ),
+
+    commercialRelationships:
+      structuredClone(
+        candidate.commercialRelationships,
+      ),
+
+    flows:
+      structuredClone(
+        candidate.flows,
+      ),
+
+    gateways:
+      structuredClone(
+        gateways,
+      ),
+
+    annotations:
+      normalizeAnnotations(
+        candidate.annotations,
+      ),
+
+    secoGuide:
+      normalizeSecoGuideData(
+        candidate.secoGuide,
+      ),
+
+    updatedAt:
+      typeof candidate.updatedAt ===
+        'string'
+        ? candidate.updatedAt
+        : new Date()
+            .toISOString(),
+  };
+}
+
+/**
+ * Indica se o modelo armazenado ainda não possui
+ * completamente os campos adicionados no M1.
+ */
+function needsM1Normalization(
+  value: unknown,
+): boolean {
+  if (
+    !value ||
+    typeof value !==
+      'object'
+  ) {
+    return false;
+  }
+
+  const candidate =
+    value as Record<
+      string,
+      unknown
+    >;
+
+  return (
+    !(
+      'domain'
+      in candidate
+    ) ||
+    !(
+      'keywords'
+      in candidate
+    ) ||
+    !(
+      'references'
+      in candidate
+    ) ||
+    !(
+      'annotations'
+      in candidate
+    ) ||
+    !(
+      'secoGuide'
+      in candidate
+    )
+  );
+}
+
+/* =========================================================
+   MIGRAÇÃO DO MODELO ANTIGO
+   ========================================================= */
+
+function isLegacyRelationship(
+  value: unknown,
+): value is LegacyRelationship {
   if (
     !value ||
     typeof value !==
@@ -993,18 +1344,46 @@ function isCurrentModel(
 
   const candidate =
     value as Partial<
-      EcosystemModel
+      LegacyRelationship
     >;
 
   return (
-    candidate.schemaVersion ===
-      MODEL_SCHEMA_VERSION &&
     typeof candidate.id ===
       'string' &&
-    typeof candidate.name ===
+    typeof candidate.sourceActorId ===
       'string' &&
-    typeof candidate.description ===
+    typeof candidate.targetActorId ===
       'string' &&
+    (
+      candidate.type ===
+        'product' ||
+      candidate.type ===
+        'service' ||
+      candidate.type ===
+        'financial' ||
+      candidate.type ===
+        'information'
+    )
+  );
+}
+
+function isLegacyModel(
+  value: unknown,
+): value is LegacyModel {
+  if (
+    !value ||
+    typeof value !==
+      'object'
+  ) {
+    return false;
+  }
+
+  const candidate =
+    value as Partial<
+      LegacyModel
+    >;
+
+  return (
     Array.isArray(
       candidate.actors,
     ) &&
@@ -1012,26 +1391,111 @@ function isCurrentModel(
       isValidStoredActor,
     ) &&
     Array.isArray(
-      candidate.commercialRelationships,
+      candidate.relationships,
     ) &&
-    candidate.commercialRelationships.every(
-      isValidStoredCommercialRelationship,
-    ) &&
-    Array.isArray(
-      candidate.flows,
-    ) &&
-    candidate.flows.every(
-      isValidStoredFlow,
-    ) &&
-    Array.isArray(
-      candidate.gateways,
-    ) &&
-    candidate.gateways.every(
-      isValidStoredGateway,
-    ) &&
-    typeof candidate.updatedAt ===
-      'string'
+    candidate.relationships.every(
+      isLegacyRelationship,
+    )
   );
+}
+
+/**
+ * Migra automaticamente o modelo utilizado antes
+ * da separação entre Relação Comercial e Fluxo.
+ *
+ * Cada Relationship antigo se transforma em:
+ *
+ * 1 Relação Comercial
+ * +
+ * 1 Fluxo
+ */
+function migrateLegacyModel(
+  legacy: LegacyModel,
+): EcosystemModel {
+  const commercialRelationships:
+    CommercialRelationship[] =
+      [];
+
+  const flows:
+    Flow[] = [];
+
+  for (
+    const oldRelationship
+    of legacy.relationships
+  ) {
+    const relationship =
+      createCommercialRelationship(
+        oldRelationship.sourceActorId,
+        oldRelationship.targetActorId,
+      );
+
+    relationship.description =
+      oldRelationship.description ??
+      '';
+
+    commercialRelationships.push(
+      relationship,
+    );
+
+    const flowType: FlowType =
+      oldRelationship.type ===
+      'information'
+        ? 'content'
+        : oldRelationship.type;
+
+    const flow =
+      createFlow(
+        relationship.id,
+        oldRelationship.sourceActorId,
+        oldRelationship.targetActorId,
+        flowType,
+        flows,
+      );
+
+    flow.name =
+      oldRelationship.name ??
+      '';
+
+    flow.description =
+      oldRelationship.description ??
+      '';
+
+    flows.push(
+      flow,
+    );
+  }
+
+  const base =
+    createEmptyModel();
+
+  return {
+    ...base,
+
+    id:
+      legacy.id ||
+      base.id,
+
+    name:
+      legacy.name ||
+      'Meu Ecossistema',
+
+    description:
+      legacy.description ||
+      '',
+
+    actors:
+      structuredClone(
+        legacy.actors,
+      ),
+
+    commercialRelationships,
+
+    flows,
+
+    updatedAt:
+      new Date()
+        .toISOString(),
+  };
 }
 
 /* =========================================================
@@ -1137,6 +1601,78 @@ interface EditorState {
   ) => void;
 
   /* -------------------------------------------------------
+     ANOTAÇÕES
+     ------------------------------------------------------- */
+
+  addAnnotation: (
+    position: Position,
+    text?: string,
+  ) => string;
+
+  updateAnnotation: (
+    id: string,
+    patch:
+      Partial<
+        Omit<
+          Annotation,
+          'id'
+        >
+      >,
+    recordHistory?: boolean,
+  ) => void;
+
+  moveAnnotation: (
+    id: string,
+    position: Position,
+  ) => void;
+
+  /* -------------------------------------------------------
+     METADADOS DO MODELO
+     ------------------------------------------------------- */
+
+  updateModelMetadata: (
+    patch: ModelMetadataPatch,
+    recordHistory?: boolean,
+  ) => void;
+
+  addModelReference: (
+    text?: string,
+    url?: string,
+  ) => string;
+
+  updateModelReference: (
+    id: string,
+    patch:
+      Partial<
+        Omit<
+          ModelReference,
+          'id'
+        >
+      >,
+    recordHistory?: boolean,
+  ) => void;
+
+  removeModelReference: (
+    id: string,
+  ) => void;
+
+  /* -------------------------------------------------------
+     SECO-GUIDE
+     ------------------------------------------------------- */
+
+  updateSecoGuideSection:
+    <
+      K extends keyof SecoGuideData,
+    >(
+      section: K,
+      patch:
+        Partial<
+          SecoGuideData[K]
+        >,
+      recordHistory?: boolean,
+    ) => void;
+
+  /* -------------------------------------------------------
      SELEÇÃO
      ------------------------------------------------------- */
 
@@ -1148,6 +1684,7 @@ interface EditorState {
     commercialRelationshipIds?: string[],
     flowIds?: string[],
     gatewayIds?: string[],
+    annotationIds?: string[],
   ) => void;
 
   selectOnlyActor: (
@@ -1163,6 +1700,10 @@ interface EditorState {
   ) => void;
 
   selectOnlyGateway: (
+    id: string,
+  ) => void;
+
+  selectOnlyAnnotation: (
     id: string,
   ) => void;
 
@@ -1366,7 +1907,9 @@ export const useEditorStore =
           createActor(
             type,
             position,
-            get().model.actors,
+            get()
+              .model
+              .actors,
           );
 
         commitMutation(
@@ -1485,7 +2028,7 @@ export const useEditorStore =
       },
 
       /* ===================================================
-         RELAÇÃO COMERCIAL
+         RELAÇÕES COMERCIAIS
          =================================================== */
 
       addCommercialRelationship: (
@@ -1525,11 +2068,6 @@ export const useEditorStore =
           return null;
         }
 
-        /**
-         * Relação Comercial não possui direção.
-         *
-         * A-B e B-A representam a mesma relação.
-         */
         if (
           commercialRelationshipExistsBetween(
             model,
@@ -1750,9 +2288,7 @@ export const useEditorStore =
               flow.id === id,
           );
 
-        if (
-          !current
-        ) {
+        if (!current) {
           return;
         }
 
@@ -1886,6 +2422,345 @@ export const useEditorStore =
       },
 
       /* ===================================================
+         ANOTAÇÕES
+         =================================================== */
+
+      addAnnotation: (
+        position,
+        text = 'Anotação',
+      ) => {
+        const annotation =
+          createAnnotation(
+            position,
+            text,
+          );
+
+        commitMutation(
+          set,
+          (model) => ({
+            ...model,
+
+            annotations: [
+              ...model.annotations,
+              annotation,
+            ],
+          }),
+        );
+
+        set({
+          selection: {
+            ...EMPTY_SELECTION,
+
+            annotationIds: [
+              annotation.id,
+            ],
+          },
+        });
+
+        return annotation.id;
+      },
+
+      updateAnnotation: (
+        id,
+        patch,
+        recordHistory = true,
+      ) => {
+        if (
+          !annotationExists(
+            get().model,
+            id,
+          )
+        ) {
+          return;
+        }
+
+        const mutate = (
+          model:
+            EcosystemModel,
+        ): EcosystemModel => ({
+          ...model,
+
+          annotations:
+            model.annotations.map(
+              (annotation) =>
+                annotation.id === id
+                  ? {
+                      ...annotation,
+                      ...patch,
+                    }
+                  : annotation,
+            ),
+        });
+
+        if (
+          recordHistory
+        ) {
+          commitMutation(
+            set,
+            mutate,
+          );
+        } else {
+          set(
+            (state) => ({
+              model:
+                touch(
+                  mutate(
+                    cloneModel(
+                      state.model,
+                    ),
+                  ),
+                ),
+            }),
+          );
+        }
+      },
+
+      moveAnnotation: (
+        id,
+        position,
+      ) => {
+        get().updateAnnotation(
+          id,
+          {
+            position,
+          },
+          false,
+        );
+      },
+
+      /* ===================================================
+         METADADOS DO MODELO
+         =================================================== */
+
+      updateModelMetadata: (
+        patch,
+        recordHistory = true,
+      ) => {
+        const normalizedPatch:
+          ModelMetadataPatch = {
+            ...patch,
+          };
+
+        if (
+          patch.keywords
+        ) {
+          normalizedPatch.keywords =
+            unique(
+              patch.keywords
+                .map(
+                  (keyword) =>
+                    keyword.trim(),
+                )
+                .filter(Boolean),
+            );
+        }
+
+        const mutate = (
+          model:
+            EcosystemModel,
+        ): EcosystemModel => ({
+          ...model,
+          ...normalizedPatch,
+        });
+
+        if (
+          recordHistory
+        ) {
+          commitMutation(
+            set,
+            mutate,
+          );
+        } else {
+          set(
+            (state) => ({
+              model:
+                touch(
+                  mutate(
+                    cloneModel(
+                      state.model,
+                    ),
+                  ),
+                ),
+            }),
+          );
+        }
+      },
+
+      /* ===================================================
+         REFERÊNCIAS
+         =================================================== */
+
+      addModelReference: (
+        text = '',
+        url,
+      ) => {
+        const reference =
+          createModelReference(
+            text,
+            url,
+          );
+
+        commitMutation(
+          set,
+          (model) => ({
+            ...model,
+
+            references: [
+              ...model.references,
+              reference,
+            ],
+          }),
+        );
+
+        return reference.id;
+      },
+
+      updateModelReference: (
+        id,
+        patch,
+        recordHistory = true,
+      ) => {
+        const exists =
+          get()
+            .model
+            .references
+            .some(
+              (reference) =>
+                reference.id === id,
+            );
+
+        if (!exists) {
+          return;
+        }
+
+        const mutate = (
+          model:
+            EcosystemModel,
+        ): EcosystemModel => ({
+          ...model,
+
+          references:
+            model.references.map(
+              (reference) =>
+                reference.id === id
+                  ? {
+                      ...reference,
+                      ...patch,
+                    }
+                  : reference,
+            ),
+        });
+
+        if (
+          recordHistory
+        ) {
+          commitMutation(
+            set,
+            mutate,
+          );
+        } else {
+          set(
+            (state) => ({
+              model:
+                touch(
+                  mutate(
+                    cloneModel(
+                      state.model,
+                    ),
+                  ),
+                ),
+            }),
+          );
+        }
+      },
+
+      removeModelReference: (
+        id,
+      ) => {
+        const exists =
+          get()
+            .model
+            .references
+            .some(
+              (reference) =>
+                reference.id === id,
+            );
+
+        if (!exists) {
+          return;
+        }
+
+        commitMutation(
+          set,
+          (model) => ({
+            ...model,
+
+            references:
+              model.references.filter(
+                (reference) =>
+                  reference.id !== id,
+              ),
+          }),
+        );
+      },
+
+      /* ===================================================
+         SECO-GUIDE
+         =================================================== */
+
+      updateSecoGuideSection: (
+        section,
+        patch,
+        recordHistory = true,
+      ) => {
+        const mutate = (
+          model:
+            EcosystemModel,
+        ): EcosystemModel => {
+          const nextSecoGuide = {
+            ...model.secoGuide,
+
+            [section]: {
+              ...model.secoGuide[
+                section
+              ],
+
+              ...patch,
+            },
+          } as SecoGuideData;
+
+          return {
+            ...model,
+
+            secoGuide:
+              nextSecoGuide,
+          };
+        };
+
+        if (
+          recordHistory
+        ) {
+          commitMutation(
+            set,
+            mutate,
+          );
+        } else {
+          set(
+            (state) => ({
+              model:
+                touch(
+                  mutate(
+                    cloneModel(
+                      state.model,
+                    ),
+                  ),
+                ),
+            }),
+          );
+        }
+      },
+
+      /* ===================================================
          EXCLUSÃO
          =================================================== */
 
@@ -1914,11 +2789,17 @@ export const useEditorStore =
               selection.gatewayIds,
             );
 
+          const annotationSet =
+            new Set(
+              selection.annotationIds,
+            );
+
           const totalSelected =
             actorSet.size +
             relationshipSet.size +
             flowSet.size +
-            gatewaySet.size;
+            gatewaySet.size +
+            annotationSet.size;
 
           if (
             totalSelected === 0
@@ -1929,10 +2810,6 @@ export const useEditorStore =
           commitMutation(
             set,
             (model) => {
-              /**
-               * Descobre relações removidas por exclusão
-               * direta ou por exclusão de ator.
-               */
               const removedRelationshipIds =
                 new Set(
                   model.commercialRelationships
@@ -1973,10 +2850,6 @@ export const useEditorStore =
                       ),
                   ),
 
-                /**
-                 * Excluir Relação Comercial remove
-                 * automaticamente seus Fluxos.
-                 */
                 flows:
                   model.flows.filter(
                     (flow) =>
@@ -2001,6 +2874,14 @@ export const useEditorStore =
                         gateway.id,
                       ),
                   ),
+
+                annotations:
+                  model.annotations.filter(
+                    (annotation) =>
+                      !annotationSet.has(
+                        annotation.id,
+                      ),
+                  ),
               };
             },
           );
@@ -2020,6 +2901,7 @@ export const useEditorStore =
         commercialRelationshipIds = [],
         flowIds = [],
         gatewayIds = [],
+        annotationIds = [],
       ) => {
         const model =
           get().model;
@@ -2065,6 +2947,17 @@ export const useEditorStore =
               ).filter(
                 (id) =>
                   gatewayExists(
+                    model,
+                    id,
+                  ),
+              ),
+
+            annotationIds:
+              unique(
+                annotationIds,
+              ).filter(
+                (id) =>
+                  annotationExists(
                     model,
                     id,
                   ),
@@ -2159,6 +3052,29 @@ export const useEditorStore =
             ...EMPTY_SELECTION,
 
             gatewayIds: [
+              id,
+            ],
+          },
+        });
+      },
+
+      selectOnlyAnnotation: (
+        id,
+      ) => {
+        if (
+          !annotationExists(
+            get().model,
+            id,
+          )
+        ) {
+          return;
+        }
+
+        set({
+          selection: {
+            ...EMPTY_SELECTION,
+
+            annotationIds: [
               id,
             ],
           },
@@ -2492,6 +3408,9 @@ export const useEditorStore =
 
             gatewayIds:
               [],
+
+            annotationIds:
+              [],
           },
 
           clipboard: {
@@ -2561,7 +3480,7 @@ export const useEditorStore =
             set,
             () =>
               result.model,
-        );
+          );
 
           set({
             selection: {
@@ -2575,6 +3494,9 @@ export const useEditorStore =
                 result.flowIds,
 
               gatewayIds:
+                [],
+
+              annotationIds:
                 [],
             },
           });
@@ -2639,21 +3561,42 @@ export const useEditorStore =
           try {
             const parsed:
               unknown =
-                JSON.parse(raw);
+                JSON.parse(
+                  raw,
+                );
 
             let model:
               EcosystemModel;
 
-            /**
-             * Modelo novo.
-             */
-            if (
-              isCurrentModel(
+            const needsNormalization =
+              needsM1Normalization(
                 parsed,
-              )
-            ) {
+              );
+
+            const normalized =
+              normalizeCurrentModel(
+                parsed,
+              );
+
+            /**
+             * Modelo 4.0 atual.
+             *
+             * Também aceita os modelos 4.0 salvos
+             * antes da introdução dos metadados,
+             * SECO-Guide e anotações.
+             */
+            if (normalized) {
               model =
-                parsed;
+                normalized;
+
+              if (
+                needsNormalization
+              ) {
+                get().showNotice(
+                  'O rascunho foi atualizado automaticamente para a nova estrutura da ECOS Modeling 4.0.',
+                  'info',
+                );
+              }
             }
 
             /**
@@ -2711,6 +3654,30 @@ export const useEditorStore =
               transactionBase:
                 null,
             });
+
+            /**
+             * Após uma normalização ou migração,
+             * salvamos novamente para evitar repetir
+             * a conversão a cada carregamento.
+             */
+            if (
+              needsNormalization ||
+              isLegacyModel(
+                parsed,
+              )
+            ) {
+              try {
+                localStorage.setItem(
+                  STORAGE_KEY,
+                  JSON.stringify(
+                    model,
+                  ),
+                );
+              } catch {
+                // A falha aqui não impede que o
+                // modelo já carregado seja utilizado.
+              }
+            }
 
             return true;
           } catch {

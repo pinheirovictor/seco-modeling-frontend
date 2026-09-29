@@ -4,21 +4,24 @@
 
 .home-page {
   width: 100%;
-
   min-height: 100%;
 
-  background: var(--ecos-surface);
+  background:
+    var(--ecos-surface);
 
-  color: var(--ecos-text);
+  color:
+    var(--ecos-text);
 }
 
 .home-container {
-  width: min(
-    1180px,
-    calc(100% - 48px)
-  );
+  width:
+    min(
+      1180px,
+      calc(100% - 48px)
+    );
 
-  margin: 0 auto;
+  margin:
+    0 auto;
 }
 
 /* =========================================================
@@ -63,7 +66,12 @@
   border-radius: 50%;
 
   background:
-    rgba(94, 94, 94, 0.035);
+    rgba(
+      94,
+      94,
+      94,
+      0.035
+    );
 }
 
 .home-hero::after {
@@ -80,7 +88,12 @@
   border-radius: 50%;
 
   background:
-    rgba(79, 116, 135, 0.035);
+    rgba(
+      79,
+      116,
+      135,
+      0.035
+    );
 }
 
 .home-hero__content {
@@ -91,12 +104,12 @@
   display: grid;
 
   grid-template-columns:
-    minmax(0, 1.05fr)
-    minmax(410px, 0.95fr);
+    minmax(0, 0.95fr)
+    minmax(500px, 1.05fr);
 
   align-items: center;
 
-  gap: 74px;
+  gap: 48px;
 
   padding-top: 62px;
   padding-bottom: 62px;
@@ -117,7 +130,9 @@
 
   min-height: 26px;
 
-  padding: 0 9px;
+  padding:
+    0
+    9px;
 
   margin-bottom: 17px;
 
@@ -128,16 +143,25 @@
   border-radius: 999px;
 
   background:
-    rgba(255, 255, 255, 0.68);
+    rgba(
+      255,
+      255,
+      255,
+      0.68
+    );
 
-  color: var(--ecos-primary);
+  color:
+    var(--ecos-primary);
 
   font-size: 9px;
+
   font-weight: 850;
 
-  text-transform: uppercase;
+  text-transform:
+    uppercase;
 
-  letter-spacing: 0.1em;
+  letter-spacing:
+    0.1em;
 }
 
 .home-hero h1 {
@@ -148,17 +172,20 @@
 
   max-width: 680px;
 
-  color: var(--ecos-text);
+  color:
+    var(--ecos-text);
 
-  font-size: clamp(
-    31px,
-    3.3vw,
-    47px
-  );
+  font-size:
+    clamp(
+      31px,
+      3.3vw,
+      47px
+    );
 
   line-height: 1.08;
 
-  letter-spacing: -0.045em;
+  letter-spacing:
+    -0.045em;
 
   font-weight: 820;
 }
@@ -252,7 +279,12 @@ button.home-button {
 
   box-shadow:
     0 7px 18px
-    rgba(34, 34, 34, 0.13);
+    rgba(
+      34,
+      34,
+      34,
+      0.13
+    );
 }
 
 .home-button--primary:hover {
@@ -307,7 +339,12 @@ button.home-button {
 
   box-shadow:
     0 6px 18px
-    rgba(34, 34, 34, 0.14);
+    rgba(
+      34,
+      34,
+      34,
+      0.14
+    );
 }
 
 .home-button--light:hover {
@@ -323,25 +360,37 @@ button.home-button {
    ========================================================= */
 
 .home-hero__visual {
+  width: 100%;
+  min-width: 0;
+
   display: flex;
 
   align-items: center;
   justify-content: center;
 }
 
+/* =========================================================
+   ECOS MODEL PREVIEW
+   ========================================================= */
+
 .home-ecos-preview {
   position: relative;
 
-  width: 460px;
-  height: 270px;
+  width: 100%;
+  max-width: 620px;
+
+  overflow: hidden;
 
   border:
     1px solid
     var(--ecos-border);
 
-  border-radius: 18px;
+  border-radius: 16px;
 
-  background:
+  background-color:
+    #ffffff;
+
+  background-image:
     radial-gradient(
       circle,
       #deddd6 1px,
@@ -349,200 +398,187 @@ button.home-button {
     );
 
   background-size:
-    22px
-    22px;
-
-  background-color:
-    #ffffff;
+    18px
+    18px;
 
   box-shadow:
-    0 25px 70px
-    rgba(34, 34, 34, 0.10);
-}
-
-/* =========================================================
-   HERO SSN NODES
-   ========================================================= */
-
-.home-ecos-preview__node {
-  position: absolute;
-
-  min-width: 132px;
-
-  height: 47px;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  padding:
-    0
-    16px;
-
-  border:
-    1.5px solid
-    #111827;
-
-  font-size: 9px;
-
-  font-weight: 800;
-
-  white-space: nowrap;
-
-  z-index: 3;
-}
-
-/* =========================================================
-   FORNECEDOR
-   ========================================================= */
-
-.home-ecos-preview__node--supplier {
-  left: 28px;
-  top: 48px;
-
-  min-width: 128px;
-
-  background: #ffa412;
-
-  color: #111111;
-
-  clip-path:
-    polygon(
-      0 0,
-      82% 0,
-      100% 50%,
-      82% 100%,
-      0 100%
+    0 24px 65px
+    rgba(
+      34,
+      34,
+      34,
+      0.10
     );
 }
 
 /* =========================================================
-   COMPANHIA DE INTERESSE
+   SVG
    ========================================================= */
 
-.home-ecos-preview__node--coi {
-  right: 27px;
-  top: 109px;
+.home-ecos-preview__svg {
+  width: 100%;
+  height: auto;
 
-  width: 160px;
+  display: block;
 
-  background: #123cff;
-
-  color: #ffffff;
+  overflow: visible;
 }
 
 /* =========================================================
-   CLIENTE
+   SSN RELATIONSHIPS
    ========================================================= */
 
-.home-ecos-preview__node--customer {
-  left: 40px;
-  bottom: 40px;
+.home-ecos-preview__relationships line {
+  fill: none;
 
-  min-width: 128px;
-
-  background: #fff200;
-
-  color: #111111;
-
-  clip-path:
-    polygon(
-      18% 0,
-      100% 0,
-      100% 100%,
-      18% 100%,
-      0 50%
-    );
-}
-
-/* =========================================================
-   HERO RELATIONSHIPS
-   ========================================================= */
-
-.home-ecos-preview__relationship {
-  position: absolute;
-
-  left: 144px;
-  top: 92px;
-
-  width: 160px;
-  height: 1.5px;
-
-  background: #222222;
-
-  transform:
-    rotate(17deg);
-
-  transform-origin:
-    left
-    center;
-
-  z-index: 1;
-}
-
-.home-ecos-preview__relationship--second {
-  left: 154px;
-  top: 190px;
-
-  width: 150px;
-
-  transform:
-    rotate(-17deg);
-}
-
-/* =========================================================
-   HERO FLOWS
-   ========================================================= */
-
-.home-ecos-preview__flow {
-  position: absolute;
-
-  left: 50%;
-  top: 50%;
-
-  width: 47px;
-  height: 23px;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  background:
-    #ffffff;
-
-  border:
-    1px solid
+  stroke:
     #222222;
 
-  clip-path:
-    polygon(
-      0 0,
-      78% 0,
-      100% 50%,
-      78% 100%,
-      0 100%
-    );
+  stroke-width: 1.25;
 
-  color: #222222;
-
-  font-size: 8px;
-
-  font-weight: 850;
-
-  transform:
-    translate(-50%, -50%)
-    rotate(-17deg);
-
-  z-index: 4;
+  vector-effect:
+    non-scaling-stroke;
 }
 
-.home-ecos-preview__relationship--second
-.home-ecos-preview__flow {
-  transform:
-    translate(-50%, -50%)
-    rotate(17deg);
+/* =========================================================
+   SSN ACTORS
+   ========================================================= */
+
+.home-ecos-preview__actor polygon,
+.home-ecos-preview__actor rect {
+  stroke:
+    #222222;
+
+  stroke-width: 1.2;
+
+  vector-effect:
+    non-scaling-stroke;
+
+  filter:
+    drop-shadow(
+      0
+      2px
+      2px
+      rgba(
+        34,
+        34,
+        34,
+        0.08
+      )
+    );
+}
+
+.home-ecos-preview__actor text {
+  fill:
+    #111111;
+
+  font-family:
+    inherit;
+
+  font-size:
+    14px;
+
+  font-weight:
+    800;
+
+  dominant-baseline:
+    middle;
+
+  pointer-events:
+    none;
+}
+
+.home-ecos-preview__actor
+.home-ecos-preview__actor-text--light {
+  fill:
+    #ffffff;
+}
+
+/* =========================================================
+   SSN SEMANTIC COLORS
+   ========================================================= */
+
+/* Fornecedor */
+
+.home-ecos-preview__supplier {
+  fill:
+    #ffa412;
+}
+
+/* Companhia de Interesse */
+
+.home-ecos-preview__coi {
+  fill:
+    #123cff;
+
+  stroke:
+    #0d2bad !important;
+}
+
+/* Intermediário */
+
+.home-ecos-preview__intermediary {
+  fill:
+    #32cc32;
+}
+
+/* Agregador */
+
+.home-ecos-preview__aggregator {
+  fill:
+    #ff1b1b;
+}
+
+/* Cliente */
+
+.home-ecos-preview__customer {
+  fill:
+    #fff200;
+}
+
+/* Cliente do Cliente */
+
+.home-ecos-preview__customer-of-customer {
+  fill:
+    #d3d3d3;
+}
+
+/* =========================================================
+   SSN FLOWS
+   ========================================================= */
+
+.home-ecos-preview__flow polygon {
+  fill:
+    #ffffff;
+
+  stroke:
+    #222222;
+
+  stroke-width:
+    1;
+
+  vector-effect:
+    non-scaling-stroke;
+}
+
+.home-ecos-preview__flow text {
+  fill:
+    #222222;
+
+  font-family:
+    inherit;
+
+  font-size:
+    11px;
+
+  font-weight:
+    850;
+
+  dominant-baseline:
+    middle;
+
+  pointer-events:
+    none;
 }
 
 /* =========================================================
@@ -593,9 +629,11 @@ button.home-button {
 
   font-weight: 850;
 
-  text-transform: uppercase;
+  text-transform:
+    uppercase;
 
-  letter-spacing: 0.12em;
+  letter-spacing:
+    0.12em;
 }
 
 .home-section__heading h2 {
@@ -608,7 +646,8 @@ button.home-button {
 
   line-height: 1.2;
 
-  letter-spacing: -0.03em;
+  letter-spacing:
+    -0.03em;
 }
 
 .home-section__heading > p {
@@ -697,7 +736,12 @@ button.home-button {
 
   box-shadow:
     0 13px 34px
-    rgba(34, 34, 34, 0.075);
+    rgba(
+      34,
+      34,
+      34,
+      0.075
+    );
 }
 
 .home-feature-card__icon {
@@ -740,7 +784,8 @@ button.home-button {
 
   font-size: 13px;
 
-  letter-spacing: -0.015em;
+  letter-spacing:
+    -0.015em;
 }
 
 .home-feature-card p {
@@ -796,7 +841,8 @@ button.home-button {
   color:
     var(--ecos-accent);
 
-  text-decoration: underline;
+  text-decoration:
+    underline;
 }
 
 /* =========================================================
@@ -1000,7 +1046,8 @@ button.home-button {
       #4b4b4b
     );
 
-  color: #ffffff;
+  color:
+    #ffffff;
 
   border-top:
     1px solid
@@ -1026,15 +1073,22 @@ button.home-button {
   margin-bottom: 7px;
 
   color:
-    rgba(255, 255, 255, 0.62);
+    rgba(
+      255,
+      255,
+      255,
+      0.62
+    );
 
   font-size: 9px;
 
   font-weight: 850;
 
-  text-transform: uppercase;
+  text-transform:
+    uppercase;
 
-  letter-spacing: 0.12em;
+  letter-spacing:
+    0.12em;
 }
 
 .home-cta h2 {
@@ -1043,18 +1097,25 @@ button.home-button {
     0
     9px;
 
-  color: #ffffff;
+  color:
+    #ffffff;
 
   font-size: 23px;
 
-  letter-spacing: -0.025em;
+  letter-spacing:
+    -0.025em;
 }
 
 .home-cta p {
   margin: 0;
 
   color:
-    rgba(255, 255, 255, 0.75);
+    rgba(
+      255,
+      255,
+      255,
+      0.75
+    );
 
   font-size: 11px;
 
@@ -1074,7 +1135,12 @@ button.home-button {
     #3f3f3f;
 
   color:
-    rgba(255, 255, 255, 0.74);
+    rgba(
+      255,
+      255,
+      255,
+      0.74
+    );
 
   border-top:
     1px solid
@@ -1099,7 +1165,8 @@ button.home-button {
 }
 
 .home-footer strong {
-  color: #ffffff;
+  color:
+    #ffffff;
 
   font-size: 11px;
 }
@@ -1120,7 +1187,26 @@ button.home-button {
    RESPONSIVIDADE
    ========================================================= */
 
-@media (max-width: 1050px) {
+@media (max-width: 1100px) {
+  .home-hero__content {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(440px, 1fr);
+
+    gap: 34px;
+  }
+
+  .home-hero h1 {
+    font-size:
+      clamp(
+        30px,
+        3.2vw,
+        40px
+      );
+  }
+}
+
+@media (max-width: 950px) {
   .home-hero__content {
     grid-template-columns:
       1fr;
@@ -1129,11 +1215,20 @@ button.home-button {
   }
 
   .home-hero__text {
-    max-width: 780px;
+    max-width:
+      780px;
   }
 
   .home-hero__visual {
-    display: none;
+    width: 100%;
+
+    justify-content:
+      flex-start;
+  }
+
+  .home-ecos-preview {
+    max-width:
+      760px;
   }
 
   .home-features {
@@ -1154,7 +1249,8 @@ button.home-button {
   }
 
   .home-hero {
-    min-height: auto;
+    min-height:
+      auto;
   }
 
   .home-hero__content {
@@ -1164,7 +1260,13 @@ button.home-button {
   }
 
   .home-hero h1 {
-    font-size: 31px;
+    font-size:
+      31px;
+  }
+
+  .home-ecos-preview {
+    border-radius:
+      11px;
   }
 
   .home-section {
@@ -1214,5 +1316,25 @@ button.home-button {
       flex-start;
 
     gap: 8px;
+  }
+}
+
+@media (max-width: 520px) {
+  .home-hero__visual {
+    overflow-x:
+      auto;
+
+    padding-bottom:
+      4px;
+  }
+
+  .home-ecos-preview {
+    min-width:
+      500px;
+  }
+
+  .home-statistics {
+    grid-template-columns:
+      1fr;
   }
 }

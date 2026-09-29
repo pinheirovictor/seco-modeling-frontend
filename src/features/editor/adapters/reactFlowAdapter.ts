@@ -32,10 +32,20 @@ import {
  */
 export interface ActorNodeData
   extends Record<string, unknown> {
+  /**
+   * Nome concreto do ator.
+   */
   name: string;
 
+  /**
+   * Tipo SSN do ator.
+   */
   type: ActorType;
 
+  /**
+   * Indica se existe outro ator com o mesmo nome
+   * dentro do modelo.
+   */
   duplicateName: boolean;
 }
 
@@ -48,6 +58,48 @@ export type ActorFlowNode =
     ActorNodeData,
     'actor'
   >;
+
+/* =========================================================
+   ANNOTATION NODE DATA
+   ========================================================= */
+
+/**
+ * Dados enviados ao futuro componente visual
+ * AnnotationNode.
+ *
+ * A anotação é apenas um recurso de apoio visual
+ * e documental.
+ *
+ * Ela não possui semântica SSN e não participa
+ * das métricas estruturais do ecossistema.
+ */
+export interface AnnotationNodeData
+  extends Record<string, unknown> {
+  /**
+   * Texto apresentado no canvas.
+   */
+  text: string;
+}
+
+/**
+ * Node do React Flow utilizado para representar
+ * uma anotação textual.
+ */
+export type AnnotationFlowNode =
+  Node<
+    AnnotationNodeData,
+    'annotation'
+  >;
+
+/**
+ * União dos nodes atualmente conhecidos pelo editor.
+ *
+ * Gateways poderão ser adicionados posteriormente
+ * sem alterar o modelo canônico.
+ */
+export type EditorFlowNode =
+  | ActorFlowNode
+  | AnnotationFlowNode;
 
 /* =========================================================
    FLOW VISUAL DATA
@@ -163,9 +215,6 @@ export interface CommercialRelationshipEdgeData
 
 /**
  * Edge específico da Relação Comercial.
- *
- * O tipo "commercialRelationship" será associado
- * posteriormente a um componente customizado do React Flow.
  */
 export type CommercialRelationshipFlowEdge =
   Edge<
@@ -174,12 +223,15 @@ export type CommercialRelationshipFlowEdge =
   >;
 
 /* =========================================================
-   MODEL → REACT FLOW NODES
+   MODEL → ACTOR NODES
    ========================================================= */
 
 /**
  * Converte atores do modelo canônico em nodes
  * do React Flow.
+ *
+ * Esta função continua retornando exclusivamente atores
+ * para manter compatibilidade com o EditorCanvas atual.
  */
 export function toFlowNodes(
   model: EcosystemModel,
@@ -196,7 +248,9 @@ export function toFlowNodes(
     );
 
   return model.actors.map(
-    (actor): ActorFlowNode => ({
+    (
+      actor,
+    ): ActorFlowNode => ({
       id:
         actor.id,
 
@@ -230,6 +284,89 @@ export function toFlowNodes(
       },
     }),
   );
+}
+
+/* =========================================================
+   MODEL → ANNOTATION NODES
+   ========================================================= */
+
+/**
+ * Converte anotações do modelo canônico em nodes
+ * do React Flow.
+ *
+ * A renderização visual será feita posteriormente
+ * através de um AnnotationNode customizado.
+ */
+export function toAnnotationFlowNodes(
+  model: EcosystemModel,
+  selection: EditorSelection,
+): AnnotationFlowNode[] {
+  const selectedAnnotationIds =
+    new Set(
+      selection.annotationIds,
+    );
+
+  return model.annotations.map(
+    (
+      annotation,
+    ): AnnotationFlowNode => ({
+      id:
+        annotation.id,
+
+      type:
+        'annotation',
+
+      position: {
+        x:
+          annotation.position.x,
+
+        y:
+          annotation.position.y,
+      },
+
+      selected:
+        selectedAnnotationIds.has(
+          annotation.id,
+        ),
+
+      data: {
+        text:
+          annotation.text,
+      },
+    }),
+  );
+}
+
+/* =========================================================
+   MODEL → ALL EDITOR NODES
+   ========================================================= */
+
+/**
+ * Converte todos os elementos representados como nodes
+ * no React Flow.
+ *
+ * Atualmente:
+ *
+ * - Atores;
+ * - Anotações.
+ *
+ * Gateways poderão ser incorporados aqui posteriormente.
+ */
+export function toEditorFlowNodes(
+  model: EcosystemModel,
+  selection: EditorSelection,
+): EditorFlowNode[] {
+  return [
+    ...toFlowNodes(
+      model,
+      selection,
+    ),
+
+    ...toAnnotationFlowNodes(
+      model,
+      selection,
+    ),
+  ];
 }
 
 /* =========================================================
@@ -342,7 +479,7 @@ export function toFlowEdges(
    *
    * Primeiro pelo tipo e depois pelo identificador.
    *
-   * Isso será importante quando houver vários Fluxos
+   * Isso é importante quando existem vários Fluxos
    * na mesma Relação Comercial.
    */
   for (
@@ -350,7 +487,10 @@ export function toFlowEdges(
     of flowsByRelationship.values()
   ) {
     flows.sort(
-      (first, second) => {
+      (
+        first,
+        second,
+      ) => {
         const typeComparison =
           first.type.localeCompare(
             second.type,
@@ -381,8 +521,8 @@ export function toFlowEdges(
        * React Flow exige source e target para desenhar
        * uma aresta.
        *
-       * Aqui source/target NÃO têm significado semântico
-       * de direção.
+       * Aqui source/target NÃO possuem significado
+       * semântico de direção.
        *
        * Eles representam apenas os dois extremos da
        * Relação Comercial.
@@ -394,7 +534,7 @@ export function toFlowEdges(
         relationship.actorBId,
 
       /**
-       * Componente customizado que criaremos para
+       * Componente customizado responsável por
        * representar a Relação Comercial.
        */
       type:
@@ -406,12 +546,10 @@ export function toFlowEdges(
         ),
 
       /**
-       * Relação Comercial não possui arrow marker.
+       * Não utilizamos markerStart ou markerEnd.
        *
-      
-     
+       * A Relação Comercial SSN não possui direção.
        */
-
       data: {
         relationshipId:
           relationship.id,

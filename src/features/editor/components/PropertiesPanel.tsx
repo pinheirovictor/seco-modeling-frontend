@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 
 import {
+  useEffect,
   useState,
   type InputHTMLAttributes,
   type TextareaHTMLAttributes,
@@ -77,11 +78,18 @@ function TransactionInput(
         );
       }}
       onBlur={(event) => {
-        commitTransaction();
-
+        /**
+         * Executamos primeiro o onBlur recebido.
+         *
+         * Isso permite que campos que mantêm estado local,
+         * como palavras-chave, atualizem o modelo antes
+         * de finalizarmos a transação.
+         */
         props.onBlur?.(
           event,
         );
+
+        commitTransaction();
       }}
     />
   );
@@ -113,14 +121,46 @@ function TransactionTextarea(
         );
       }}
       onBlur={(event) => {
-        commitTransaction();
-
         props.onBlur?.(
           event,
         );
+
+        commitTransaction();
       }}
     />
   );
+}
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+/**
+ * Converte o campo textual de palavras-chave para
+ * a representação canônica string[].
+ *
+ * Aceita:
+ *
+ * segurança, desktop, software ecosystem
+ *
+ * ou separação por ponto e vírgula/quebra de linha.
+ */
+function parseKeywords(
+  value: string,
+): string[] {
+  return [
+    ...new Set(
+      value
+        .split(
+          /[,;\n]+/,
+        )
+        .map(
+          (keyword) =>
+            keyword.trim(),
+        )
+        .filter(Boolean),
+    ),
+  ];
 }
 
 /* =========================================================
@@ -150,6 +190,20 @@ export function PropertiesPanel() {
     >(
       'a-to-b',
     );
+
+  /**
+   * Palavras-chave permanecem localmente enquanto
+   * o usuário digita para que seja possível escrever:
+   *
+   * educação, SIGAA, software ecosystem
+   *
+   * sem o campo ser normalizado após cada tecla.
+   */
+  const [
+    keywordsDraft,
+    setKeywordsDraft,
+  ] =
+    useState('');
 
   /* -------------------------------------------------------
      STORE
@@ -221,6 +275,45 @@ export function PropertiesPanel() {
         state.duplicateSelectedActors,
     );
 
+  const updateModelMetadata =
+    useEditorStore(
+      (state) =>
+        state.updateModelMetadata,
+    );
+
+  const addModelReference =
+    useEditorStore(
+      (state) =>
+        state.addModelReference,
+    );
+
+  const updateModelReference =
+    useEditorStore(
+      (state) =>
+        state.updateModelReference,
+    );
+
+  const removeModelReference =
+    useEditorStore(
+      (state) =>
+        state.removeModelReference,
+    );
+
+  /* =======================================================
+     SINCRONIZAÇÃO DE PALAVRAS-CHAVE
+     ======================================================= */
+
+  useEffect(() => {
+    setKeywordsDraft(
+      model.keywords.join(
+        ', ',
+      ),
+    );
+  }, [
+    model.id,
+    model.keywords,
+  ]);
+
   /* =======================================================
      SELEÇÃO
      ======================================================= */
@@ -231,7 +324,8 @@ export function PropertiesPanel() {
       .commercialRelationshipIds
       .length +
     selection.flowIds.length +
-    selection.gatewayIds.length;
+    selection.gatewayIds.length +
+    selection.annotationIds.length;
 
   /* -------------------------------------------------------
      ATOR
@@ -420,7 +514,7 @@ export function PropertiesPanel() {
   return (
     <aside
       className="panel properties-panel"
-      aria-label="Propriedades do elemento selecionado"
+      aria-label="Propriedades do modelo ou elemento selecionado"
     >
       <div className="panel__heading">
         <div>
@@ -435,24 +529,250 @@ export function PropertiesPanel() {
       </div>
 
       {/* ===================================================
-          NENHUMA SELEÇÃO
+          MODELO — NENHUMA SELEÇÃO
           =================================================== */}
 
       {totalSelected === 0 ? (
-        <div className="empty-properties">
-          <div className="empty-properties__icon">
-            ⌁
+        <div className="form-stack">
+          <div className="properties-badge">
+            Modelo
           </div>
 
-          <strong>
-            Nenhum elemento selecionado
-          </strong>
+          <div className="actor-definition">
+            <span className="eyebrow">
+              Informações do modelo
+            </span>
 
-          <p>
-            Selecione um ator, uma Relação Comercial
-            ou um Fluxo para visualizar e editar suas
-            propriedades.
-          </p>
+            <p>
+              Defina os metadados gerais utilizados para
+              identificar, documentar e posteriormente
+              publicar o ecossistema modelado.
+            </p>
+
+            <small>
+              O nome do modelo pode ser alterado na barra
+              superior do editor.
+            </small>
+          </div>
+
+          {/* -----------------------------------------------
+              DESCRIÇÃO DO MODELO
+              ----------------------------------------------- */}
+
+          <label>
+            Descrição
+
+            <TransactionTextarea
+              rows={5}
+              value={
+                model.description
+              }
+              placeholder="Descreva o ecossistema representado por este modelo."
+              onChange={(event) => {
+                updateModelMetadata(
+                  {
+                    description:
+                      event.target
+                        .value,
+                  },
+                  false,
+                );
+              }}
+            />
+
+            <small className="field-help">
+              Apresente brevemente o contexto e o objetivo
+              geral da representação.
+            </small>
+          </label>
+
+          {/* -----------------------------------------------
+              DOMÍNIO
+              ----------------------------------------------- */}
+
+          <label>
+            Domínio
+
+            <TransactionInput
+              value={
+                model.domain
+              }
+              placeholder="Ex.: Educação, Saúde, Governo"
+              autoComplete="off"
+              onChange={(event) => {
+                updateModelMetadata(
+                  {
+                    domain:
+                      event.target
+                        .value,
+                  },
+                  false,
+                );
+              }}
+            />
+
+            <small className="field-help">
+              Área na qual o ecossistema está inserido.
+            </small>
+          </label>
+
+          {/* -----------------------------------------------
+              PALAVRAS-CHAVE
+              ----------------------------------------------- */}
+
+          <label>
+            Palavras-chave
+
+            <TransactionInput
+              value={
+                keywordsDraft
+              }
+              placeholder="Ex.: educação, SIGAA, software ecosystem"
+              autoComplete="off"
+              onChange={(event) => {
+                setKeywordsDraft(
+                  event.target.value,
+                );
+              }}
+              onBlur={() => {
+                updateModelMetadata(
+                  {
+                    keywords:
+                      parseKeywords(
+                        keywordsDraft,
+                      ),
+                  },
+                  false,
+                );
+              }}
+            />
+
+            <small className="field-help">
+              Separe as palavras-chave por vírgulas.
+            </small>
+          </label>
+
+          {/* -----------------------------------------------
+              REFERÊNCIAS
+              ----------------------------------------------- */}
+
+          <div className="actor-definition">
+            <span className="eyebrow">
+              Referências
+            </span>
+
+            <p>
+              Registre artigos, documentos, páginas
+              institucionais ou outras fontes utilizadas
+              durante a modelagem.
+            </p>
+
+            {model.references.length ===
+            0 ? (
+              <small className="field-help">
+                Nenhuma referência adicionada.
+              </small>
+            ) : (
+              <div className="reference-list">
+                {model.references.map(
+                  (
+                    reference,
+                    index,
+                  ) => (
+                    <div
+                      key={
+                        reference.id
+                      }
+                      className="reference-card"
+                    >
+                      <div className="reference-card__header">
+                        <strong>
+                          Referência{' '}
+                          {index + 1}
+                        </strong>
+
+                        <button
+                          type="button"
+                          className="icon-button"
+                          title="Remover referência"
+                          aria-label={`Remover referência ${index + 1}`}
+                          onClick={() => {
+                            removeModelReference(
+                              reference.id,
+                            );
+                          }}
+                        >
+                          <Trash2
+                            size={14}
+                          />
+                        </button>
+                      </div>
+
+                      <label>
+                        Referência
+
+                        <TransactionTextarea
+                          rows={3}
+                          value={
+                            reference.text
+                          }
+                          placeholder="Informe a referência ou fonte utilizada."
+                          onChange={(event) => {
+                            updateModelReference(
+                              reference.id,
+                              {
+                                text:
+                                  event.target
+                                    .value,
+                              },
+                              false,
+                            );
+                          }}
+                        />
+                      </label>
+
+                      <label>
+                        URL
+
+                        <TransactionInput
+                          type="url"
+                          value={
+                            reference.url ??
+                            ''
+                          }
+                          placeholder="https://..."
+                          autoComplete="url"
+                          onChange={(event) => {
+                            updateModelReference(
+                              reference.id,
+                              {
+                                url:
+                                  event.target
+                                    .value ||
+                                  undefined,
+                              },
+                              false,
+                            );
+                          }}
+                        />
+                      </label>
+                    </div>
+                  ),
+                )}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => {
+                addModelReference();
+              }}
+            >
+              <Plus size={15} />
+
+              Adicionar referência
+            </button>
+          </div>
         </div>
       ) : null}
 
@@ -479,9 +799,16 @@ export function PropertiesPanel() {
                 .commercialRelationshipIds
                 .length
             }{' '}
-            relação(ões) comercial(is) e{' '}
+            relação(ões),{' '}
             {selection.flowIds.length}{' '}
-            fluxo(s).
+            fluxo(s)
+            {selection.gatewayIds.length > 0
+              ? `, ${selection.gatewayIds.length} gateway(s)`
+              : ''}
+            {selection.annotationIds.length > 0
+              ? ` e ${selection.annotationIds.length} anotação(ões)`
+              : ''}
+            .
           </p>
 
           {selection.actorIds.length > 0 ? (
@@ -695,18 +1022,18 @@ export function PropertiesPanel() {
           </label>
 
           {/* -----------------------------------------------
-              DESCRIÇÃO
+              DESCRIÇÃO / OBSERVAÇÕES
               ----------------------------------------------- */}
 
           <label>
-            Descrição no modelo
+            Descrição / observações
 
             <TransactionTextarea
               rows={6}
               value={
                 actor.description
               }
-              placeholder="Descreva o papel específico deste ator no ecossistema modelado."
+              placeholder="Descreva o papel deste ator e, quando necessário, justifique sua inclusão no ecossistema."
               onChange={(event) => {
                 updateActor(
                   actor.id,
@@ -721,8 +1048,9 @@ export function PropertiesPanel() {
             />
 
             <small className="field-help">
-              Esta descrição pertence ao ator deste
-              modelo e não altera sua definição SSN.
+              Registre informações específicas sobre a
+              participação deste ator no ecossistema
+              modelado.
             </small>
           </label>
         </div>
@@ -789,7 +1117,7 @@ export function PropertiesPanel() {
                 commercialRelationship
                   .description
               }
-              placeholder="Descreva a relação comercial entre os atores."
+              placeholder="Descreva o significado da relação entre os atores."
               onChange={(event) => {
                 updateCommercialRelationship(
                   commercialRelationship.id,
@@ -1222,7 +1550,7 @@ export function PropertiesPanel() {
               value={
                 flow.description
               }
-              placeholder="Descreva o produto, serviço, finança ou conteúdo transferido."
+              placeholder="Descreva o produto, serviço, recurso financeiro ou conteúdo transferido."
               onChange={(event) => {
                 updateFlow(
                   flow.id,

@@ -33,31 +33,46 @@ import {
 } from '../store/editorStore';
 
 /**
- * Tela principal do editor da ECOS Modeling.
+ * Tela principal do editor da ECOS Modeling 4.0.
  *
  * Responsabilidades:
  *
  * - montar as regiões principais do editor;
- * - tentar recuperar o último rascunho local;
- * - realizar autosave;
- * - ativar os atalhos globais.
+ * - recuperar o último rascunho local;
+ * - realizar autosave do modelo canônico;
+ * - ativar os atalhos globais;
+ * - manter a interface desacoplada da persistência.
  *
- * Regras da notação SSN permanecem no domínio/store.
+ * O modelo salvo inclui:
+ *
+ * - metadados;
+ * - atores;
+ * - relações comerciais;
+ * - fluxos;
+ * - gateways;
+ * - anotações;
+ * - dados do SECO-Guide.
+ *
+ * Regras da notação SSN e alterações do modelo
+ * permanecem no domínio/store.
  */
 export function EditorPage() {
   const model =
     useEditorStore(
-      (state) => state.model,
+      (state) =>
+        state.model,
     );
 
   const loadLocal =
     useEditorStore(
-      (state) => state.loadLocal,
+      (state) =>
+        state.loadLocal,
     );
 
   const saveLocal =
     useEditorStore(
-      (state) => state.saveLocal,
+      (state) =>
+        state.saveLocal,
     );
 
   /**
@@ -92,14 +107,11 @@ export function EditorPage() {
       true;
 
     /**
-     * loadLocal retorna false quando:
+     * loadLocal também é responsável por normalizar
+     * modelos 4.0 armazenados antes da estrutura atual.
      *
-     * - não existe rascunho;
-     * - o rascunho é inválido;
-     * - ocorreu erro de leitura.
-     *
-     * Em qualquer desses casos podemos continuar
-     * utilizando o modelo vazio criado pela factory.
+     * Caso não exista rascunho, o modelo vazio criado
+     * pela factory continua sendo utilizado.
      */
     loadLocal();
 
@@ -116,10 +128,8 @@ export function EditorPage() {
 
   useEffect(() => {
     /**
-     * Muito importante:
-     *
-     * não salvamos o modelo vazio antes de tentar carregar
-     * um rascunho existente.
+     * Não salvamos o modelo vazio antes da tentativa
+     * inicial de recuperar um rascunho existente.
      */
     if (
       !localModelReady
@@ -130,9 +140,11 @@ export function EditorPage() {
     /**
      * Debounce simples.
      *
-     * Movimentar um ator ou digitar um texto pode gerar
-     * várias atualizações sucessivas. Esperamos um pequeno
-     * período de inatividade antes de persistir.
+     * Movimentação de elementos e edição de campos podem
+     * gerar várias atualizações sucessivas.
+     *
+     * O modelo canônico completo é persistido após um
+     * pequeno período de inatividade.
      */
     const timeout =
       window.setTimeout(
@@ -164,7 +176,7 @@ export function EditorPage() {
       {/*
        * Componente sem interface visual.
        *
-       * Apenas registra os atalhos globais da aplicação.
+       * Registra os atalhos globais da aplicação.
        */}
       <EditorShortcuts />
 

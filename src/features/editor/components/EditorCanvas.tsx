@@ -51,13 +51,19 @@ import {
    ========================================================= */
 
 /**
- * Tipos de nodes reconhecidos pelo React Flow.
+ * Tipos de nodes atualmente renderizados pelo React Flow.
  *
- * Atualmente:
+ * Nesta etapa:
  *
  * - actor
  *
- * Gateways serão adicionados posteriormente como nodes.
+ * O modelo canônico já suporta:
+ *
+ * - annotations;
+ * - gateways.
+ *
+ * Esses elementos serão registrados aqui quando seus
+ * respectivos componentes visuais forem implementados.
  */
 const nodeTypes = {
   actor:
@@ -193,6 +199,14 @@ function EditorCanvasInner() {
      MODELO → REACT FLOW
      ======================================================= */
 
+  /**
+   * Nesta etapa ainda renderizamos apenas atores.
+   *
+   * O modelo canônico já possui annotations e o adapter
+   * já está preparado para convertê-las, mas a troca para
+   * toEditorFlowNodes() será feita quando o AnnotationNode
+   * for implementado.
+   */
   const nodes =
     useMemo(
       () =>
@@ -316,12 +330,16 @@ function EditorCanvasInner() {
      ======================================================= */
 
   /**
-   * Nodes selecionados representam atores.
+   * Nodes atualmente selecionáveis no React Flow
+   * representam atores.
    *
    * Edges selecionados representam Relações Comerciais.
    *
    * Fluxos são selecionados diretamente pelas caixas
-   * P.1, S.1, F.1, C.1 renderizadas no edge customizado.
+   * P.1, S.1, F.1 e C.1 renderizadas no edge customizado.
+   *
+   * annotationIds permanece vazio enquanto as anotações
+   * ainda não forem renderizadas no canvas.
    */
   const handleSelectionChange =
     useCallback(
@@ -344,6 +362,8 @@ function EditorCanvasInner() {
             (edge) =>
               edge.id,
           ),
+
+          [],
 
           [],
 
@@ -415,6 +435,9 @@ function EditorCanvasInner() {
   /**
    * O minimapa utiliza as cores semânticas definidas
    * no catálogo SSN.
+   *
+   * Como apenas ActorFlowNode é renderizado nesta etapa,
+   * podemos acessar diretamente node.data.type.
    */
   const miniMapNodeColor =
     useCallback(
@@ -444,13 +467,21 @@ function EditorCanvasInner() {
   const flowCount =
     model.flows.length;
 
+  /**
+   * Incluímos annotationIds mesmo que as anotações ainda
+   * não estejam visíveis no React Flow.
+   *
+   * Isso mantém o contador compatível com o modelo de
+   * seleção canônico.
+   */
   const selectedCount =
     selection.actorIds.length +
     selection
       .commercialRelationshipIds
       .length +
     selection.flowIds.length +
-    selection.gatewayIds.length;
+    selection.gatewayIds.length +
+    selection.annotationIds.length;
 
   /* =======================================================
      RENDER

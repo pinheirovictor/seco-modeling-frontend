@@ -6,18 +6,101 @@ import {
   MODEL_SCHEMA_VERSION,
   type Actor,
   type ActorType,
+  type Annotation,
   type CommercialRelationship,
   type EcosystemModel,
   type Flow,
   type FlowType,
   type Gateway,
   type GatewayType,
+  type ModelReference,
   type Position,
+  type SecoGuideData,
 } from './model';
 
 import {
   uniqueActorName,
 } from './validation';
+
+/* =========================================================
+   SECO-GUIDE
+   ========================================================= */
+
+/**
+ * Cria a estrutura inicial de dados do SECO-Guide.
+ *
+ * O SECO-Guide não mantém cópias de atores,
+ * relações comerciais ou fluxos.
+ *
+ * Essas informações continuam pertencendo ao modelo
+ * SSN canônico.
+ */
+export function createEmptySecoGuideData(): SecoGuideData {
+  return {
+    /* -----------------------------------------------------
+       ETAPA 1 — ESCOPO E OBJETIVOS
+       ----------------------------------------------------- */
+
+    scope: {
+      purpose: '',
+      boundaries: '',
+      objectives: '',
+    },
+
+    /* -----------------------------------------------------
+       ETAPA 2 — ATORES DIRETOS
+       ----------------------------------------------------- */
+
+    directActors: {
+      notes: '',
+    },
+
+    /* -----------------------------------------------------
+       ETAPA 3 — ATORES INTERMEDIÁRIOS
+       ----------------------------------------------------- */
+
+    intermediaryActors: {
+      notes: '',
+      reviewed: false,
+    },
+
+    /* -----------------------------------------------------
+       ETAPA 4 — RELACIONAMENTOS
+       ----------------------------------------------------- */
+
+    relationships: {
+      notes: '',
+    },
+
+    /* -----------------------------------------------------
+       ETAPA 5 — FLUXOS DE VALOR
+       ----------------------------------------------------- */
+
+    valueFlows: {
+      notes: '',
+    },
+
+    /* -----------------------------------------------------
+       ETAPA 6 — DIAGRAMA SSN
+       ----------------------------------------------------- */
+
+    diagram: {
+      organizationCriteria: '',
+      notes: '',
+      visuallyReviewed: false,
+    },
+
+    /* -----------------------------------------------------
+       ETAPA 7 — REVISÃO E REFINAMENTO
+       ----------------------------------------------------- */
+
+    review: {
+      reviewedPoints: '',
+      pendingIssues: '',
+      completed: false,
+    },
+  };
+}
 
 /* =========================================================
    MODELO
@@ -27,7 +110,10 @@ import {
  * Cria um novo modelo vazio da ECOS Modeling 4.0.
  *
  * O modelo nasce sem atores, relações comerciais,
- * fluxos ou gateways.
+ * fluxos, gateways ou anotações.
+ *
+ * Os metadados gerais e a estrutura do SECO-Guide
+ * são inicializados com valores vazios.
  */
 export function createEmptyModel(): EcosystemModel {
   return {
@@ -43,6 +129,15 @@ export function createEmptyModel(): EcosystemModel {
     description:
       '',
 
+    domain:
+      '',
+
+    keywords:
+      [],
+
+    references:
+      [],
+
     actors:
       [],
 
@@ -55,8 +150,47 @@ export function createEmptyModel(): EcosystemModel {
     gateways:
       [],
 
+    annotations:
+      [],
+
+    secoGuide:
+      createEmptySecoGuideData(),
+
     updatedAt:
       new Date().toISOString(),
+  };
+}
+
+/* =========================================================
+   REFERÊNCIAS
+   ========================================================= */
+
+/**
+ * Cria uma referência associada ao modelo.
+ *
+ * A referência pode representar:
+ *
+ * - artigo científico;
+ * - documentação;
+ * - relatório;
+ * - página institucional;
+ * - outra fonte utilizada durante a modelagem.
+ */
+export function createModelReference(
+  text = '',
+  url?: string,
+): ModelReference {
+  return {
+    id:
+      crypto.randomUUID(),
+
+    text,
+
+    ...(url
+      ? {
+          url,
+        }
+      : {}),
   };
 }
 
@@ -124,14 +258,15 @@ export function createActor(
  * - conecta exatamente dois atores;
  * - não possui direção;
  * - não possui seta;
- * - pode conter um ou mais Fluxos.
+ * - pode possuir um ou mais Fluxos.
  *
  * Exemplo visual:
  *
  * Fornecedor ───────────────── Companhia de Interesse
  *
- * actorAId e actorBId não representam origem/destino.
- * Eles representam apenas os dois participantes da relação.
+ * actorAId e actorBId não representam origem e destino.
+ * Eles representam apenas os dois participantes
+ * da relação.
  */
 export function createCommercialRelationship(
   actorAId: string,
@@ -234,10 +369,9 @@ export function nextFlowIdentifier(
  *
  * P.1
  *
- *
  * Unity ───────── [ P.1 ] ───────── SkinnerBox
  *
- * semanticamente:
+ * Semanticamente:
  *
  * Unity → SkinnerBox
  */
@@ -283,13 +417,13 @@ export function createFlow(
 /**
  * Cria um Gateway lógico da notação SSN.
  *
- * Os Gateways serão implementados visualmente em uma
- * etapa posterior.
- *
  * Tipos:
  *
- * - OR  -> OU Gateway
- * - XOR -> XOU Gateway
+ * - OR  -> OU
+ * - XOR -> XOU
+ *
+ * A implementação visual e as regras específicas
+ * serão finalizadas posteriormente.
  */
 export function createGateway(
   type: GatewayType,
@@ -300,6 +434,39 @@ export function createGateway(
       crypto.randomUUID(),
 
     type,
+
+    position: {
+      x:
+        position.x,
+
+      y:
+        position.y,
+    },
+  };
+}
+
+/* =========================================================
+   ANOTAÇÕES
+   ========================================================= */
+
+/**
+ * Cria uma anotação textual livre no canvas.
+ *
+ * Anotações servem apenas como apoio visual e
+ * documental.
+ *
+ * Elas não fazem parte da estrutura semântica SSN
+ * e não devem participar das métricas do ecossistema.
+ */
+export function createAnnotation(
+  position: Position,
+  text = 'Anotação',
+): Annotation {
+  return {
+    id:
+      crypto.randomUUID(),
+
+    text,
 
     position: {
       x:
