@@ -98,7 +98,7 @@ export const ACTOR_TYPES: ActorTypeDefinition[] = [
       'direct',
 
     description:
-      'Empresa que entrega o produto de interesse que está sob análise no ecossistema.',
+      'Empresa que entrega o produto de interesse.',
 
     shape:
       'rectangle',
@@ -128,7 +128,7 @@ export const ACTOR_TYPES: ActorTypeDefinition[] = [
       'direct',
 
     description:
-      'Ator que fornece um ou mais produtos ou serviços.',
+      'Ator que fornece produtos ou serviços.',
 
     shape:
       'arrow-right',
@@ -158,7 +158,7 @@ export const ACTOR_TYPES: ActorTypeDefinition[] = [
       'direct',
 
     description:
-      'Ator que adquire ou faz uso do produto de interesse, seja esse uso direto ou indireto.',
+      'Ator que faz uso do produtos ou serviços.',
 
     shape:
       'arrow-left',
@@ -188,7 +188,7 @@ export const ACTOR_TYPES: ActorTypeDefinition[] = [
       'indirect',
 
     description:
-      'Ator que atua como intermediário entre duas partes que se relacionam, como revendedores ou distribuidores.',
+      'Ator intermediário entre duas partes.',
 
     shape:
       'hexagon',
@@ -218,7 +218,7 @@ export const ACTOR_TYPES: ActorTypeDefinition[] = [
       'indirect',
 
     description:
-      'Cliente de um cliente do ecossistema que utiliza produtos ou serviços relacionados direta ou indiretamente à Companhia de Interesse.',
+      'Cliente indireto da Empresa de Interesse.',
 
     shape:
       'notched-right',
@@ -248,7 +248,7 @@ export const ACTOR_TYPES: ActorTypeDefinition[] = [
       'indirect',
 
     description:
-      'Empresa, produto ou serviço direta ou indiretamente ligado à Companhia de Interesse.',
+      'Intermediário forte ligado à Empresa de Interesse.',
 
     /*
      * A ECOS Modeling adota a representação visual

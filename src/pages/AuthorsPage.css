@@ -1,0 +1,713 @@
+/* =========================================================
+   AUTHORS PAGE
+   ========================================================= */
+
+.authors-page {
+  width: 100%;
+  min-height: 100%;
+
+  background:
+    var(--ecos-surface);
+
+  color:
+    var(--ecos-text);
+}
+
+.authors-container {
+  width:
+    min(
+      1180px,
+      calc(100% - 48px)
+    );
+
+  margin:
+    0
+    auto;
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.authors-hero {
+  background:
+    linear-gradient(
+      120deg,
+      var(--ecos-beige) 0%,
+      var(--ecos-beige-soft) 62%,
+      #ffffff 100%
+    );
+
+  border-bottom:
+    1px solid
+    var(--ecos-border);
+}
+
+.authors-hero__content {
+  min-height: 230px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 22px;
+
+  padding:
+    44px
+    0;
+}
+
+.authors-hero__icon {
+  width: 58px;
+  height: 58px;
+
+  flex:
+    0
+    0
+    auto;
+
+  display: grid;
+
+  place-items: center;
+
+  border:
+    1px solid
+    var(--ecos-border);
+
+  border-radius: 13px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.74
+    );
+
+  color:
+    var(--ecos-primary);
+}
+
+.authors-eyebrow {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color:
+    var(--ecos-primary);
+
+  font-size: 9px;
+
+  font-weight: 850;
+
+  text-transform:
+    uppercase;
+
+  letter-spacing:
+    0.12em;
+}
+
+.authors-hero h1 {
+  margin:
+    0
+    0
+    10px;
+
+  color:
+    var(--ecos-text);
+
+  font-size:
+    clamp(
+      30px,
+      3vw,
+      39px
+    );
+
+  line-height:
+    1.1;
+
+  letter-spacing:
+    -0.04em;
+}
+
+.authors-hero p {
+  max-width:
+    700px;
+
+  margin: 0;
+
+  color:
+    var(--ecos-text-secondary);
+
+  font-size: 12px;
+
+  line-height:
+    1.7;
+}
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+.authors-content {
+  padding:
+    58px
+    0
+    76px;
+
+  background:
+    var(--ecos-surface);
+}
+
+/* =========================================================
+   SECTION
+   ========================================================= */
+
+.authors-section + .authors-section {
+  margin-top:
+    68px;
+}
+
+.authors-section__heading {
+  max-width:
+    700px;
+
+  margin-bottom:
+    25px;
+}
+
+.authors-section__heading > span {
+  display:
+    block;
+
+  margin-bottom:
+    6px;
+
+  color:
+    var(--ecos-primary);
+
+  font-size:
+    9px;
+
+  font-weight:
+    850;
+
+  text-transform:
+    uppercase;
+
+  letter-spacing:
+    0.12em;
+}
+
+.authors-section__heading h2 {
+  margin: 0;
+
+  color:
+    var(--ecos-text);
+
+  font-size:
+    23px;
+
+  line-height:
+    1.2;
+
+  letter-spacing:
+    -0.03em;
+}
+
+.authors-section__heading p {
+  max-width:
+    620px;
+
+  margin:
+    9px
+    0
+    0;
+
+  color:
+    var(--ecos-text-secondary);
+
+  font-size:
+    11px;
+
+  line-height:
+    1.65;
+}
+
+/* =========================================================
+   AUTHORS GRID
+   ========================================================= */
+
+.authors-grid {
+  display:
+    grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap:
+    16px;
+}
+
+/* =========================================================
+   AUTHOR CARD
+   ========================================================= */
+
+.author-card {
+  min-height:
+    245px;
+
+  display:
+    grid;
+
+  grid-template-columns:
+    118px
+    minmax(0, 1fr);
+
+  align-items:
+    stretch;
+
+  gap:
+    20px;
+
+  padding:
+    20px;
+
+  border:
+    1px solid
+    var(--ecos-border);
+
+  border-radius:
+    12px;
+
+  background:
+    var(--ecos-surface);
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.author-card:hover {
+  transform:
+    translateY(-2px);
+
+  border-color:
+    var(--ecos-border-strong);
+
+  box-shadow:
+    0 10px 30px
+    rgba(
+      34,
+      34,
+      34,
+      0.07
+    );
+}
+
+/* =========================================================
+   PHOTO
+   ========================================================= */
+
+.author-card__photo-wrapper {
+  width:
+    118px;
+
+  height:
+    142px;
+
+  overflow:
+    hidden;
+
+  align-self:
+    flex-start;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+  justify-content:
+    center;
+
+  border:
+    1px solid
+    var(--ecos-border);
+
+  border-radius:
+    10px;
+
+  background:
+    var(--ecos-beige);
+}
+
+.author-card__photo {
+  width:
+    100%;
+
+  height:
+    100%;
+
+  display:
+    block;
+
+  object-fit:
+    cover;
+
+  object-position:
+    center;
+}
+
+.author-card__photo-placeholder {
+  width:
+    100%;
+
+  height:
+    100%;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+  justify-content:
+    center;
+
+  background:
+    var(--ecos-beige);
+
+  color:
+    var(--ecos-primary);
+
+  font-size:
+    27px;
+
+  font-weight:
+    850;
+
+  letter-spacing:
+    -0.04em;
+}
+
+/* =========================================================
+   CARD CONTENT
+   ========================================================= */
+
+.author-card__content {
+  min-width: 0;
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+}
+
+/* =========================================================
+   IDENTITY
+   ========================================================= */
+
+.author-card__identity {
+  min-width: 0;
+
+  margin-bottom:
+    12px;
+}
+
+.author-card__institution {
+  display:
+    inline-flex;
+
+  align-items:
+    center;
+
+  gap:
+    5px;
+
+  margin-bottom:
+    6px;
+
+  color:
+    var(--ecos-text-muted);
+
+  font-size:
+    9px;
+
+  font-weight:
+    700;
+}
+
+.author-card__identity h3 {
+  margin: 0;
+
+  color:
+    var(--ecos-text);
+
+  font-size:
+    13.5px;
+
+  line-height:
+    1.3;
+
+  letter-spacing:
+    -0.018em;
+}
+
+/* =========================================================
+   DESCRIPTION
+   ========================================================= */
+
+.author-card__description {
+  flex: 1;
+
+  margin: 0;
+
+  color:
+    var(--ecos-text-secondary);
+
+  font-size:
+    10.5px;
+
+  line-height:
+    1.65;
+}
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+.author-card__links {
+  margin-top:
+    17px;
+
+  padding-top:
+    13px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  flex-wrap:
+    wrap;
+
+  gap:
+    8px;
+
+  border-top:
+    1px solid
+    var(--ecos-border-light);
+}
+
+.author-card__link {
+  min-height:
+    29px;
+
+  display:
+    inline-flex;
+
+  align-items:
+    center;
+  justify-content:
+    center;
+
+  gap:
+    6px;
+
+  padding:
+    0
+    10px;
+
+  border-radius:
+    6px;
+
+  text-decoration:
+    none;
+
+  font-size:
+    9px;
+
+  font-weight:
+    750;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+/* =========================================================
+   LATTES
+   ========================================================= */
+
+.author-card__link--primary {
+  border:
+    1px solid
+    var(--ecos-primary);
+
+  background:
+    var(--ecos-primary);
+
+  color:
+    #ffffff;
+}
+
+.author-card__link--primary:hover {
+  border-color:
+    var(--ecos-primary-hover);
+
+  background:
+    var(--ecos-primary-hover);
+
+  color:
+    #ffffff;
+}
+
+/* =========================================================
+   INSTITUTIONAL PAGE
+   ========================================================= */
+
+.author-card__link--secondary {
+  border:
+    1px solid
+    var(--ecos-border-strong);
+
+  background:
+    transparent;
+
+  color:
+    var(--ecos-primary);
+}
+
+.author-card__link--secondary:hover {
+  border-color:
+    var(--ecos-primary);
+
+  background:
+    var(--ecos-beige-hover);
+
+  color:
+    var(--ecos-primary);
+}
+
+/* =========================================================
+   COLLABORATORS
+   ========================================================= */
+
+.authors-section--collaborators {
+  padding-top:
+    54px;
+
+  border-top:
+    1px solid
+    var(--ecos-border);
+}
+
+.authors-section--collaborators
+.author-card {
+  background:
+    var(--ecos-beige-soft);
+}
+
+.authors-section--collaborators
+.author-card__photo-wrapper,
+.authors-section--collaborators
+.author-card__photo-placeholder {
+  background:
+    var(--ecos-surface);
+}
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 950px) {
+  .authors-grid {
+    grid-template-columns:
+      1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .authors-container {
+    width:
+      calc(
+        100% - 30px
+      );
+  }
+
+  .authors-hero__content {
+    min-height:
+      auto;
+
+    padding:
+      38px
+      0;
+
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
+
+    gap:
+      16px;
+  }
+
+  .authors-content {
+    padding:
+      42px
+      0
+      55px;
+  }
+
+  .authors-section + .authors-section {
+    margin-top:
+      48px;
+  }
+
+  .authors-section--collaborators {
+    padding-top:
+      42px;
+  }
+
+  .author-card {
+    grid-template-columns:
+      92px
+      minmax(0, 1fr);
+
+    gap:
+      15px;
+
+    padding:
+      16px;
+  }
+
+  .author-card__photo-wrapper {
+    width:
+      92px;
+
+    height:
+      112px;
+  }
+}
+
+@media (max-width: 460px) {
+  .author-card {
+    grid-template-columns:
+      1fr;
+  }
+
+  .author-card__photo-wrapper {
+    width:
+      105px;
+
+    height:
+      126px;
+  }
+}

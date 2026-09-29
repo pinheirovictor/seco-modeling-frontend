@@ -1,0 +1,613 @@
+/* =========================================================
+   LOGIN PAGE
+   ========================================================= */
+
+.login-page {
+  width: 100%;
+  min-height: 100%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    52px
+    24px
+    70px;
+
+  background:
+    linear-gradient(
+      120deg,
+      var(--ecos-beige) 0%,
+      var(--ecos-beige-soft) 55%,
+      #ffffff 100%
+    );
+
+  color:
+    var(--ecos-text);
+}
+
+/* =========================================================
+   CONTAINER
+   ========================================================= */
+
+.login-page__container {
+  width: min(
+    860px,
+    100%
+  );
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    330px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    var(--ecos-border);
+
+  border-radius: 16px;
+
+  background:
+    var(--ecos-surface);
+
+  box-shadow:
+    0 22px 65px
+    rgba(34, 34, 34, 0.10);
+}
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.login-card {
+  padding:
+    46px
+    44px;
+
+  background:
+    var(--ecos-surface);
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.login-card__header {
+  margin-bottom: 30px;
+}
+
+.login-card__eyebrow {
+  display: inline-block;
+
+  margin-bottom: 8px;
+
+  color:
+    var(--ecos-primary);
+
+  font-size: 9px;
+
+  font-weight: 850;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.12em;
+}
+
+.login-card__header h1 {
+  margin:
+    0
+    0
+    9px;
+
+  color:
+    var(--ecos-text);
+
+  font-size: 28px;
+
+  line-height: 1.15;
+
+  letter-spacing: -0.035em;
+}
+
+.login-card__header p {
+  max-width: 430px;
+
+  margin: 0;
+
+  color:
+    var(--ecos-text-secondary);
+
+  font-size: 11.5px;
+
+  line-height: 1.65;
+}
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.login-form {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 17px;
+}
+
+/* =========================================================
+   FIELD
+   ========================================================= */
+
+.login-field {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.login-field > span,
+.login-field__header > span {
+  color:
+    var(--ecos-primary);
+
+  font-size: 10.5px;
+
+  font-weight: 750;
+}
+
+.login-field__header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+/* =========================================================
+   INPUT
+   ========================================================= */
+
+.login-input {
+  min-height: 42px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  padding:
+    0
+    11px;
+
+  border:
+    1px solid
+    var(--ecos-border);
+
+  border-radius: 8px;
+
+  background:
+    var(--ecos-surface);
+
+  color:
+    var(--ecos-text-muted);
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.login-input:focus-within {
+  border-color:
+    var(--ecos-accent);
+
+  box-shadow:
+    0 0 0 3px
+    var(--selection-ring);
+}
+
+.login-input input {
+  width: 100%;
+  min-width: 0;
+
+  height: 40px;
+
+  padding: 0;
+
+  border: 0;
+
+  outline: 0;
+
+  background:
+    transparent;
+
+  color:
+    var(--ecos-text);
+
+  font-size: 11.5px;
+}
+
+.login-input input::placeholder {
+  color:
+    var(--ecos-text-muted);
+}
+
+/* =========================================================
+   PASSWORD TOGGLE
+   ========================================================= */
+
+.login-password-toggle {
+  width: 28px;
+  height: 28px;
+
+  flex:
+    0
+    0
+    auto;
+
+  display: grid;
+
+  place-items: center;
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 6px;
+
+  background:
+    transparent;
+
+  color:
+    var(--ecos-text-muted);
+}
+
+.login-password-toggle:hover {
+  background:
+    var(--ecos-beige-soft);
+
+  color:
+    var(--ecos-primary);
+}
+
+/* =========================================================
+   FORGOT PASSWORD
+   ========================================================= */
+
+.login-forgot-password {
+  padding: 0;
+
+  border: 0;
+
+  background:
+    transparent;
+
+  color:
+    var(--ecos-accent-hover);
+
+  font-size: 9px;
+
+  font-weight: 750;
+
+  cursor: pointer;
+}
+
+.login-forgot-password:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================
+   REMEMBER
+   ========================================================= */
+
+.login-remember {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  color:
+    var(--ecos-text-secondary);
+
+  font-size: 9.5px;
+
+  cursor: pointer;
+}
+
+.login-remember input {
+  width: 14px;
+  height: 14px;
+
+  margin: 0;
+
+  accent-color:
+    var(--ecos-primary);
+}
+
+/* =========================================================
+   SUBMIT
+   ========================================================= */
+
+.login-submit {
+  width: 100%;
+
+  min-height: 42px;
+
+  margin-top: 2px;
+
+  border:
+    1px solid
+    var(--ecos-primary);
+
+  border-radius: 8px;
+
+  background:
+    var(--ecos-primary);
+
+  color: #ffffff;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.login-submit:hover {
+  background:
+    var(--ecos-primary-hover);
+
+  border-color:
+    var(--ecos-primary-hover);
+}
+
+.login-submit:active {
+  transform:
+    translateY(1px);
+}
+
+/* =========================================================
+   REGISTER LINK
+   ========================================================= */
+
+.login-register {
+  margin-top: 24px;
+
+  padding-top: 19px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  border-top:
+    1px solid
+    var(--ecos-border-light);
+
+  color:
+    var(--ecos-text-secondary);
+
+  font-size: 9.5px;
+}
+
+.login-register a {
+  color:
+    var(--ecos-accent-hover);
+
+  text-decoration: none;
+
+  font-weight: 800;
+}
+
+.login-register a:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================
+   INFORMATION PANEL
+   ========================================================= */
+
+.login-info {
+  padding:
+    44px
+    36px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  background:
+    var(--ecos-beige);
+
+  border-left:
+    1px solid
+    var(--ecos-border);
+}
+
+/* =========================================================
+   ICON
+   ========================================================= */
+
+.login-info__icon {
+  width: 49px;
+  height: 49px;
+
+  margin-bottom: 24px;
+
+  display: grid;
+
+  place-items: center;
+
+  border:
+    1px solid
+    var(--ecos-border);
+
+  border-radius: 11px;
+
+  background:
+    var(--ecos-surface);
+
+  color:
+    var(--ecos-primary);
+}
+
+/* =========================================================
+   INFO TEXT
+   ========================================================= */
+
+.login-info__eyebrow {
+  margin-bottom: 7px;
+
+  color:
+    var(--ecos-primary);
+
+  font-size: 9px;
+
+  font-weight: 850;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.12em;
+}
+
+.login-info h2 {
+  margin:
+    0
+    0
+    12px;
+
+  color:
+    var(--ecos-text);
+
+  font-size: 21px;
+
+  line-height: 1.25;
+
+  letter-spacing: -0.025em;
+}
+
+.login-info > p {
+  margin:
+    0
+    0
+    26px;
+
+  color:
+    var(--ecos-text-secondary);
+
+  font-size: 10.5px;
+
+  line-height: 1.7;
+}
+
+/* =========================================================
+   HIGHLIGHT
+   ========================================================= */
+
+.login-info__highlight {
+  padding:
+    15px;
+
+  border:
+    1px solid
+    var(--ecos-border);
+
+  border-radius: 10px;
+
+  background:
+    rgba(255, 255, 255, 0.55);
+}
+
+.login-info__highlight strong {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color:
+    var(--ecos-primary);
+
+  font-size: 10px;
+}
+
+.login-info__highlight span {
+  display: block;
+
+  color:
+    var(--ecos-text-secondary);
+
+  font-size: 9px;
+
+  line-height: 1.55;
+}
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 800px) {
+  .login-page {
+    align-items:
+      flex-start;
+
+    padding:
+      30px
+      16px
+      50px;
+  }
+
+  .login-page__container {
+    grid-template-columns:
+      1fr;
+  }
+
+  .login-info {
+    border-left: 0;
+
+    border-top:
+      1px solid
+      var(--ecos-border);
+  }
+}
+
+@media (max-width: 520px) {
+  .login-card {
+    padding:
+      32px
+      22px;
+  }
+
+  .login-info {
+    padding:
+      30px
+      22px;
+  }
+
+  .login-card__header h1 {
+    font-size: 24px;
+  }
+
+  .login-field__header {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
+
+    gap: 4px;
+  }
+}

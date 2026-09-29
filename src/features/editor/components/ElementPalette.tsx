@@ -218,9 +218,7 @@ export function ElementPalette() {
             Notação SSN
           </span>
 
-          <h2>
-            Atores do ecossistema
-          </h2>
+        
         </div>
       </div>
 
@@ -254,7 +252,7 @@ export function ElementPalette() {
 
         <p>
           Participantes diretamente
-          relacionados à Companhia de
+          relacionados à Empresa de
           Interesse.
         </p>
 
