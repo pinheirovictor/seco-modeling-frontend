@@ -408,10 +408,8 @@ export function toFlowEdges(
       /**
        * Relação Comercial não possui arrow marker.
        *
-       * Portanto:
-       *
-       * NÃO existe markerStart
-       * NÃO existe markerEnd
+      
+     
        */
 
       data: {
