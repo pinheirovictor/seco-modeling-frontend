@@ -214,10 +214,6 @@ export function EditorToolbar() {
           <strong>
             ECOS Modeling
           </strong>
-
-          <span>
-            4.0 · Editor SSN
-          </span>
         </div>
       </div>
 

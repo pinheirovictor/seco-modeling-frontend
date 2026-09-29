@@ -1,0 +1,343 @@
+/* =========================================================
+   PLATFORM HEADER
+   ========================================================= */
+
+.platform-header {
+  position: relative;
+
+  width: 100%;
+
+  flex: 0 0 auto;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid #dfe5ee;
+
+  z-index: 100;
+}
+
+/* =========================================================
+   BARRA SUPERIOR
+   ========================================================= */
+
+.platform-header__top {
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+
+  background: #12395b;
+
+  color: #ffffff;
+}
+
+.platform-header__top-content {
+  width: 100%;
+
+  max-width: 1540px;
+
+  margin: 0 auto;
+
+  padding: 0 28px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.platform-header__language {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height: 22px;
+
+  padding: 0 7px;
+
+  border-radius: 5px;
+
+  color: rgba(255, 255, 255, 0.9);
+
+  font-size: 9px;
+  font-weight: 750;
+
+  letter-spacing: 0.04em;
+}
+
+/* =========================================================
+   BARRA PRINCIPAL
+   ========================================================= */
+
+.platform-header__main {
+  height: 66px;
+
+  display: flex;
+
+  align-items: center;
+
+  background: #ffffff;
+}
+
+.platform-header__container {
+  width: 100%;
+
+  max-width: 1540px;
+
+  height: 100%;
+
+  margin: 0 auto;
+
+  padding: 0 28px;
+
+  display: grid;
+
+  grid-template-columns:
+    auto
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+
+  gap: 30px;
+}
+
+/* =========================================================
+   LOGO / MARCA
+   ========================================================= */
+
+.platform-brand {
+  display: inline-flex;
+
+  align-items: baseline;
+
+  gap: 5px;
+
+  flex: 0 0 auto;
+
+  text-decoration: none;
+
+  white-space: nowrap;
+}
+
+.platform-brand__ecos {
+  color: #12395b;
+
+  font-size: 21px;
+  font-weight: 900;
+
+  letter-spacing: -0.035em;
+}
+
+.platform-brand__modeling {
+  color: #4c647a;
+
+  font-size: 16px;
+  font-weight: 500;
+
+  letter-spacing: -0.025em;
+}
+
+/* =========================================================
+   NAVEGAÇÃO
+   ========================================================= */
+
+.platform-nav {
+  min-width: 0;
+
+  height: 100%;
+
+  display: flex;
+
+  align-items: stretch;
+  justify-content: center;
+
+  gap: 2px;
+}
+
+.platform-nav__link {
+  position: relative;
+
+  height: 100%;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 11px;
+
+  color: #536174;
+
+  text-decoration: none;
+
+  white-space: nowrap;
+
+  font-size: 10.5px;
+  font-weight: 650;
+
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.platform-nav__link:hover {
+  color: #12395b;
+
+  background: #f7f9fc;
+}
+
+.platform-nav__link::after {
+  content: "";
+
+  position: absolute;
+
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+
+  height: 3px;
+
+  border-radius: 3px 3px 0 0;
+
+  background: #12395b;
+
+  transform: scaleX(0);
+
+  transform-origin: center;
+
+  transition: transform 0.16s ease;
+}
+
+.platform-nav__link--active {
+  color: #12395b;
+
+  font-weight: 800;
+}
+
+.platform-nav__link--active::after {
+  transform: scaleX(1);
+}
+
+/* =========================================================
+   CONTA
+   ========================================================= */
+
+.platform-header__account {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  flex: 0 0 auto;
+}
+
+.platform-header__account-link {
+  min-height: 34px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 11px;
+
+  border-radius: 7px;
+
+  color: #536174;
+
+  text-decoration: none;
+
+  font-size: 10.5px;
+  font-weight: 700;
+
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.platform-header__account-link:hover {
+  color: #12395b;
+
+  background: #f4f7fa;
+}
+
+.platform-header__account-link--login {
+  padding: 0 14px;
+
+  border: 1px solid #12395b;
+
+  background: #12395b;
+
+  color: #ffffff;
+}
+
+.platform-header__account-link--login:hover {
+  background: #0e304d;
+
+  color: #ffffff;
+
+  border-color: #0e304d;
+}
+
+.platform-header__account-link--active:not(
+  .platform-header__account-link--login
+) {
+  color: #12395b;
+
+  background: #edf4f8;
+}
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 1380px) {
+  .platform-header__container {
+    gap: 18px;
+
+    padding-inline: 20px;
+  }
+
+  .platform-nav__link {
+    padding-inline: 7px;
+
+    font-size: 9.5px;
+  }
+
+  .platform-brand__ecos {
+    font-size: 19px;
+  }
+
+  .platform-brand__modeling {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 1120px) {
+  .platform-header__container {
+    grid-template-columns:
+      auto
+      minmax(0, 1fr)
+      auto;
+  }
+
+  .platform-nav {
+    justify-content: flex-start;
+
+    overflow-x: auto;
+
+    scrollbar-width: none;
+  }
+
+  .platform-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .platform-nav__link {
+    flex: 0 0 auto;
+  }
+}
